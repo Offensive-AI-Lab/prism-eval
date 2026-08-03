@@ -1,0 +1,30 @@
+PRISM-eval
+Copyright 2026 The PRISM authors
+(Gilad Gressel, Rahul Pankajakshan, Julia Diament, Efim Hudis,
+ Krishnashree Achuthan, Yisroel Mirsky)
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This product includes eval records derived from third-party datasets:
+
+  * Behavioral Constraints (BC, 250 records) — derived from
+    fka/prompts.chat, licensed CC0-1.0 (public domain dedication).
+
+  * Benign Baseline (BN, 250 records) — derived from tatsu-lab/alpaca
+    (Taori et al., "Stanford Alpaca: An Instruction-following LLaMA
+    model", 2023), licensed CC BY-NC 4.0.
+
+    NOTE: CC BY-NC 4.0 permits NON-COMMERCIAL use only. That restriction
+    applies to the BN records regardless of the Apache-2.0 licence
+    covering this project's code. See DATA_CARD.md.
+
+  * XPIA XPIA corpus (data/xpia_corpus.parquet, 25,002 rows) —
+    derived from three agent-injection benchmarks, each under its own
+    upstream terms:
+      - BIPIA               (github.com/microsoft/BIPIA)
+      - LLMail-Inject       (huggingface.co/datasets/microsoft/llmail-inject-challenge)
+      - InjecAgent          (github.com/uiuc-kang-lab/InjecAgent)
+    The taxonomy tagging layer is this project's; the prompts are not.
+
+The Adversarial Prompt (AP) and Hidden Objective (HO) records were
+generated for this project and are covered by the Apache-2.0 licence.

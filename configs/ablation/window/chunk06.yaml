@@ -1,0 +1,40 @@
+# Activation-window CHUNK ablation (reviewer request, round 3: deep chunks): tile the
+# full response in consecutive 128-token chunks (chunk0 = tokens 0-127,
+# chunk1 = 128-255, ...) and eval each chunk separately. Records whose
+# response ends before the chunk get an EMPTY report; per-chunk support
+# counts + conditional metrics are computed offline from the traces.
+# Same evaluation_name/leaderboard as the size/position runs.
+# Env (set by scripts/run_ablation_window_chunks.sh):
+#   PRISM_EVAL_ACT_WINDOW_POS=chunk6 PRISM_EVAL_BASE_GEN_MAX_NEW_TOKENS=2048 (tokens 768-895 of full response)
+# Checkpoint = GRPO 19k. Generation cap 2048 so ~all responses reach EOS.
+
+experiment:
+  name: chunk06
+  notes: "Window chunk ablation, GRPO 19k: PRISM_EVAL_ACT_WINDOW_POS=chunk6 PRISM_EVAL_BASE_GEN_MAX_NEW_TOKENS=2048 (tokens 768-895 of full response)"
+  tags: [eval_suite_v2, grpo, window_ablation, chunk_6]
+  weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
+
+suite:
+  path: data/eval_suite_v2_final.json
+  settings: [AP, HO, BC, BN]
+
+runner:
+  type: prism
+  display_name: "chunk 06 (tokens 768-895)"
+  checkpoint: ${PRISM_EVAL_CHECKPOINT_DIR}/prism-qwen3.5-9b-grpo.pt
+  device: cuda
+
+scoring:
+  bertscore: false
+  judge_llm: true
+  adversarial_detection: true
+
+annotation:
+  emit_trace: true
+  op_name: itm_annotate
+  batch_size: 16
+
+evaluation:
+  evaluation_name: prism_window_ablation
+  publish_leaderboard: true
+  leaderboard_name: prism_window_ablation_leaderboard

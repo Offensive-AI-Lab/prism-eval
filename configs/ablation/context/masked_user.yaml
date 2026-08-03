@@ -1,0 +1,46 @@
+# Extraction-context ablation (reviewer request): do response-position
+# activations genuinely encode the instruction, or is attention copying it
+# from prompt positions at extraction time? Base responses are identical in
+# every condition (shared greedy cache); only what the activation forward
+# pass can see varies, via PRISM_EVAL_ACT_CONTEXT set by
+# scripts/run_ablation_context.sh (runner _cfg comes from the checkpoint,
+# so YAML can't carry it).
+#
+# This run: masked_user — like masked_prompt but the system turn stays
+# visible; only the user turn is hidden from attention.
+# Checkpoint = GRPO 19k, published window (last 128 of a 196-cap response).
+#
+# All 5 context conditions share evaluation_name=prism_context_ablation and
+# land on prism_context_ablation_leaderboard (own board — do NOT reuse the main or
+# window-ablation leaderboard names).
+
+experiment:
+  name: masked_user
+  notes: "Act-context ablation, GRPO 19k: PRISM_EVAL_ACT_CONTEXT=masked_user (user turn hidden, system visible)"
+  tags: [eval_suite_v2, grpo, act_context_ablation, ctx_masked_user]
+  weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
+
+suite:
+  path: data/eval_suite_v2_final.json
+  settings: [AP, HO, BC, BN]
+
+runner:
+  type: prism
+  display_name: "context masked user"
+  checkpoint: ${PRISM_EVAL_CHECKPOINT_DIR}/prism-qwen3.5-9b-grpo.pt
+  device: cuda
+
+scoring:
+  bertscore: false
+  judge_llm: true
+  adversarial_detection: true
+
+annotation:
+  emit_trace: true
+  op_name: itm_annotate
+  batch_size: 16
+
+evaluation:
+  evaluation_name: prism_context_ablation
+  publish_leaderboard: true
+  leaderboard_name: prism_context_ablation_leaderboard

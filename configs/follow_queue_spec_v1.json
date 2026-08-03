@@ -1,0 +1,11 @@
+{
+  "description": "Stratified annotation queue for behavior-judge FOLLOWED calibration over the xpia XPIA run. 100 records total, split across the three attack families ~proportional to their usable pool size (bipia 13.9k / llmail 10.0k / injecagent 1.05k), with a floor of 10 for the small injecagent family so it stays meaningfully covered: bipia 52 / llmail 38 / injecagent 10. Within each family the quota is split evenly between the attack outcome the judge inferred (adversarial bullet followed = attack succeeded, vs refused = attack failed), so the judge is tested on both FOLLOWED=1 and FOLLOWED=0 evidence on the hard (injected) bullets; each sampled record still carries its benign surface-task bullets too, so the pooled bullet-level agreement also covers the easy cases. 'require' is one of: adv_followed (>=1 adversarial bullet with followed=1), adv_refused (>=1 adversarial bullet, none followed), any (no constraint on outcome).",
+  "strata": [
+    {"label": "bipia_followed",      "from_sources": ["bipia"],      "require": "adv_followed", "n": 26},
+    {"label": "bipia_refused",       "from_sources": ["bipia"],      "require": "adv_refused",  "n": 26},
+    {"label": "llmail_followed",     "from_sources": ["llmail"],     "require": "adv_followed", "n": 19},
+    {"label": "llmail_refused",      "from_sources": ["llmail"],     "require": "adv_refused",  "n": 19},
+    {"label": "injecagent_followed", "from_sources": ["injecagent"], "require": "adv_followed", "n": 5},
+    {"label": "injecagent_refused",  "from_sources": ["injecagent"], "require": "adv_refused",  "n": 5}
+  ]
+}

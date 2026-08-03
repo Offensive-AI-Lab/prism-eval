@@ -1,0 +1,168 @@
+{
+  "description": "Calibration for the SCORING judge (coverage / hallucination metrics). Two annotators labelled every claim independently, then reconciled each disagreement together into a single gold label. Gold is the reference; the pre-reconciliation inter-annotator figure is the ceiling for context.",
+  "label_scale": {
+    "0.0": "missed",
+    "0.5": "partial",
+    "1.0": "covered"
+  },
+  "kappa_definition": "Cohen's kappa with QUADRATIC weights on the ordinal scale above. Unweighted is reported alongside; the paper reports the weighted value.",
+  "annotators": {
+    "count": 2,
+    "names": [
+      "annotator_a",
+      "annotator_b"
+    ],
+    "note": "Pseudonymous by design. A third rater contributed 16 labels across 8 pilot reports and is excluded from this release entirely."
+  },
+  "provenance": {
+    "source": "reconciled gold workbooks from the training repo",
+    "requires_weave": false,
+    "note": "Every number here recomputes from the shipped JSONL alone. No Weave project, W&B account or network access is involved."
+  },
+  "rounds": {
+    "pilot": {
+      "n_records": 49,
+      "n_double_annotated": 49,
+      "judge_vs_gold": {
+        "n_evals": 49,
+        "n_claims": 170,
+        "cohens_kappa_quadratic": 0.8002,
+        "cohens_kappa_unweighted": 0.6037,
+        "gwets_ac2": 0.9121,
+        "agreement_pct": 84.1
+      },
+      "human_vs_human_prereconciliation": {
+        "n_evals": 49,
+        "n_claims": 170,
+        "cohens_kappa_quadratic": 0.8239,
+        "cohens_kappa_unweighted": 0.6332,
+        "gwets_ac2": 0.9403,
+        "agreement_pct": 87.6
+      },
+      "judge_vs_human": {
+        "annotator_a": {
+          "n_evals": 49,
+          "n_claims": 170,
+          "cohens_kappa_quadratic": 0.7526,
+          "cohens_kappa_unweighted": 0.6349,
+          "gwets_ac2": 0.893,
+          "agreement_pct": 85.9
+        },
+        "annotator_b": {
+          "n_evals": 49,
+          "n_claims": 170,
+          "cohens_kappa_quadratic": 0.7818,
+          "cohens_kappa_unweighted": 0.543,
+          "gwets_ac2": 0.9053,
+          "agreement_pct": 81.2
+        }
+      }
+    },
+    "hard": {
+      "n_records": 25,
+      "n_double_annotated": 25,
+      "judge_vs_gold": {
+        "n_evals": 25,
+        "n_claims": 104,
+        "cohens_kappa_quadratic": 0.635,
+        "cohens_kappa_unweighted": 0.4094,
+        "gwets_ac2": 0.6125,
+        "agreement_pct": 62.5
+      },
+      "human_vs_human_prereconciliation": {
+        "n_evals": 25,
+        "n_claims": 104,
+        "cohens_kappa_quadratic": 0.7403,
+        "cohens_kappa_unweighted": 0.6347,
+        "gwets_ac2": 0.7157,
+        "agreement_pct": 77.9
+      },
+      "judge_vs_human": {
+        "annotator_a": {
+          "n_evals": 25,
+          "n_claims": 104,
+          "cohens_kappa_quadratic": 0.5818,
+          "cohens_kappa_unweighted": 0.4202,
+          "gwets_ac2": 0.5377,
+          "agreement_pct": 62.5
+        },
+        "annotator_b": {
+          "n_evals": 25,
+          "n_claims": 104,
+          "cohens_kappa_quadratic": 0.6652,
+          "cohens_kappa_unweighted": 0.4245,
+          "gwets_ac2": 0.6401,
+          "agreement_pct": 63.5
+        }
+      }
+    },
+    "hard2": {
+      "n_records": 19,
+      "n_double_annotated": 0,
+      "judge_vs_gold": null,
+      "human_vs_human_prereconciliation": null,
+      "judge_vs_human": {
+        "annotator_a": null,
+        "annotator_b": null
+      }
+    }
+  },
+  "all_rounds": {
+    "n_records": 93,
+    "n_double_annotated": 74,
+    "judge_vs_gold": {
+      "n_evals": 74,
+      "n_claims": 274,
+      "cohens_kappa_quadratic": 0.7432,
+      "cohens_kappa_unweighted": 0.5356,
+      "gwets_ac2": 0.8194,
+      "agreement_pct": 75.9
+    },
+    "human_vs_human_prereconciliation": {
+      "n_evals": 74,
+      "n_claims": 274,
+      "cohens_kappa_quadratic": 0.8072,
+      "cohens_kappa_unweighted": 0.6679,
+      "gwets_ac2": 0.8693,
+      "agreement_pct": 83.9
+    },
+    "judge_vs_human": {
+      "annotator_a": {
+        "n_evals": 74,
+        "n_claims": 274,
+        "cohens_kappa_quadratic": 0.705,
+        "cohens_kappa_unweighted": 0.5634,
+        "gwets_ac2": 0.7817,
+        "agreement_pct": 77.0
+      },
+      "annotator_b": {
+        "n_evals": 74,
+        "n_claims": 274,
+        "cohens_kappa_quadratic": 0.7479,
+        "cohens_kappa_unweighted": 0.5133,
+        "gwets_ac2": 0.8204,
+        "agreement_pct": 74.5
+      }
+    }
+  },
+  "paper_table_4": {
+    "human_vs_human": {
+      "cohens_kappa": 0.823,
+      "gwets_ac2": 0.939,
+      "n_reports": 49,
+      "n_labels": 167
+    },
+    "judge_vs_gold": {
+      "cohens_kappa": 0.817,
+      "gwets_ac2": 0.93,
+      "n_reports": 49,
+      "n_labels": 170
+    },
+    "note": "The pilot round reproduces the paper's record and label counts exactly. Human-vs-human here is 0.8239 over 170 claims vs the paper's 0.8232 over 167 \u2014 the original pipeline truncated three claims where the two label vectors differed in length. Judge-vs-gold here is 0.8002 vs the paper's 0.817; the gold labels are identical, but the judge is a sampled LLM that was re-scored more than once. Two saved runs in the training repo give 0.7728 and 0.7938."
+  },
+  "adversarial_detection": {
+    "n_records": 50,
+    "judge_matches_gold": 49,
+    "note": "Separate judge and task: which report bullets name the adversarial instruction. Gold is the reconciled bullet-index set; exact-set match."
+  }
+}

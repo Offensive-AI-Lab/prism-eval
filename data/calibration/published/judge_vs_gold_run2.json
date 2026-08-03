@@ -1,0 +1,76 @@
+{
+  "n_judge_records": 49,
+  "n_gold_records": 49,
+  "axes": {
+    "instruction": {
+      "n_claims": 170,
+      "n_evals": 49,
+      "cohens_kappa": 0.5616,
+      "cohens_kappa_linear_weighted": 0.6921,
+      "cohens_kappa_quadratic_weighted": 0.7938,
+      "spearman_correlation": 0.7538,
+      "agreement_pct": 82.9,
+      "confusion_matrix": {
+        "labels": [
+          "0",
+          "0.5",
+          "1"
+        ],
+        "rows_are": "human (gold)",
+        "cols_are": "judge",
+        "matrix": [
+          [
+            17,
+            3,
+            1
+          ],
+          [
+            6,
+            4,
+            3
+          ],
+          [
+            1,
+            15,
+            120
+          ]
+        ]
+      }
+    },
+    "hallucination": {
+      "n_claims": 162,
+      "n_evals": 49,
+      "cohens_kappa": 0.0,
+      "cohens_kappa_linear_weighted": 0.0,
+      "cohens_kappa_quadratic_weighted": 0.0,
+      "spearman_correlation": null,
+      "agreement_pct": 88.9,
+      "confusion_matrix": {
+        "labels": [
+          "0",
+          "0.5",
+          "1"
+        ],
+        "rows_are": "human (gold)",
+        "cols_are": "judge",
+        "matrix": [
+          [
+            144,
+            13,
+            5
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,40 @@
+# Window ablation, "max depth without support caveats" framing: read the
+# LAST 128 tokens of the natural-EOS response (2048-token generation cap,
+# same cached responses as the chunk runs) for all 1000 records. Unlike the
+# chunk rows there is no support conditioning — every record contributes —
+# at the cost of mixing depths (short responses' tail = the whole response;
+# long responses' tail = tokens 1000+). Complements the chunk table.
+# Env (set by launcher): PRISM_EVAL_ACT_WINDOW_POS=end
+#                        PRISM_EVAL_BASE_GEN_MAX_NEW_TOKENS=2048
+# Checkpoint = GRPO 19k (same as all window-ablation rows).
+
+experiment:
+  name: pos_last128_eos
+  notes: "Window ablation, GRPO 19k: last 128 tokens of natural-EOS (2048-cap) response, all 1000 records, no support conditioning"
+  tags: [eval_suite_v2, grpo, window_ablation, pos_last_eos]
+  weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
+
+suite:
+  path: data/eval_suite_v2_final.json
+  settings: [AP, HO, BC, BN]
+
+runner:
+  type: prism
+  display_name: "position last 128 (EOS)"
+  checkpoint: ${PRISM_EVAL_CHECKPOINT_DIR}/prism-qwen3.5-9b-grpo.pt
+  device: cuda
+
+scoring:
+  bertscore: false
+  judge_llm: true
+  adversarial_detection: true
+
+annotation:
+  emit_trace: true
+  op_name: itm_annotate
+  batch_size: 16
+
+evaluation:
+  evaluation_name: prism_window_ablation
+  publish_leaderboard: true
+  leaderboard_name: prism_window_ablation_leaderboard

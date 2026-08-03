@@ -1,0 +1,37 @@
+# PRISM, supervised-finetuned only. The ablation of the RL stage.
+#
+# Identical architecture and runner to configs/main/qwen3.5-9b-grpo.yaml — same hook
+# layer, same 128-token activation window, same LoRA rank. Only the training
+# recipe differs: this is the SFT checkpoint that GRPO was initialised from,
+# so the gap between this row and the GRPO row isolates what RL bought.
+
+experiment:
+  name: qwen3.5-9b-sft
+  notes: "PRISM trained against Qwen3.5-9B, hook layer 16. SFT only — the initialisation GRPO starts from."
+  tags: [eval_suite_v2, prism, sft]
+  weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
+
+suite:
+  path: data/eval_suite_v2_final.json
+  settings: [AP, HO, BC, BN]
+
+runner:
+  type: prism
+  display_name: "PRISM (Qwen3.5-9B, SFT only)"
+  checkpoint: ${PRISM_EVAL_CHECKPOINT_DIR}/prism-qwen3.5-9b-sft.pt
+  device: cuda
+
+scoring:
+  bertscore: false
+  judge_llm: true
+  adversarial_detection: true
+
+annotation:
+  emit_trace: true
+  op_name: itm_annotate
+  batch_size: 16
+
+evaluation:
+  evaluation_name: prism_eval_suite_v2_1000
+  publish_leaderboard: true
+  leaderboard_name: prism_main_leaderboard

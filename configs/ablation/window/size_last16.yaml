@@ -1,0 +1,39 @@
+# Activation-window ablation (reviewer request): where in the base response
+# do we take activations from, and how many tokens do we need?
+# All 24 window conditions share evaluation_name=prism_window_ablation and land
+# on prism_window_ablation_leaderboard. Window/generation params are env-var overrides
+# set by scripts/run_ablation_window.sh (runner _cfg comes from the
+# checkpoint, so YAML can't carry them):
+#   PRISM_EVAL_MAX_ACT_TOKENS=16 (gen 196, end-aligned)
+# Checkpoint = GRPO 19k (same as GRPO_final_calibjudge_prio_best_19k row).
+
+experiment:
+  name: size_last16
+  notes: "Window ablation, GRPO 19k: PRISM_EVAL_MAX_ACT_TOKENS=16 (gen 196, end-aligned)"
+  tags: [eval_suite_v2, grpo, window_ablation, size_16]
+  weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
+
+suite:
+  path: data/eval_suite_v2_final.json
+  settings: [AP, HO, BC, BN]
+
+runner:
+  type: prism
+  display_name: "window size 16"
+  checkpoint: ${PRISM_EVAL_CHECKPOINT_DIR}/prism-qwen3.5-9b-grpo.pt
+  device: cuda
+
+scoring:
+  bertscore: false
+  judge_llm: true
+  adversarial_detection: true
+
+annotation:
+  emit_trace: true
+  op_name: itm_annotate
+  batch_size: 16
+
+evaluation:
+  evaluation_name: prism_window_ablation
+  publish_leaderboard: true
+  leaderboard_name: prism_window_ablation_leaderboard

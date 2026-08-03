@@ -1,0 +1,159 @@
+# ============================================================================
+# prism-eval experiment config — annotated TEMPLATE
+#
+# Run with:
+#   prism-eval evaluate --config configs/template.yaml --offline
+#
+# Copy this file, rename it, and fill in the required fields. Optional fields
+# can be deleted — defaults apply. For working examples see configs/main/.
+# ============================================================================
+
+
+# ── Experiment identity ──────────────────────────────────────────────────────
+# These values flow into the on-disk results dir (results/<name>/) and, when
+# Weave is enabled, into call attributes so every traced row is filterable by
+# experiment name and tags in the Weave UI.
+
+experiment:
+  name: my_experiment               # REQUIRED. Must be unique per run.
+  notes: "Optional free-text description."
+  tags: [prism, my_sweep] # Arbitrary labels for filtering.
+
+  weave_project: null               # null  = no Weave; run with --offline.
+                                    # "<entity>/<project>" = trace + publish
+                                    # a Leaderboard. Requires WANDB_API_KEY.
+
+
+# ── Suite ────────────────────────────────────────────────────────────────────
+# Which eval records to run. Accepts a single JSON path or a list of paths
+# (merged and deduped by eval_id).
+
+suite:
+  path: data/eval_suite_v2_final.json   # REQUIRED. The canonical 1000-record
+                                        # suite: AP/HO/BC/BN × 250.
+
+  # OR merge several files into one slice:
+  # path:
+  #   - data/eval_suite_v2_AP.json
+  #   - data/eval_suite_v2_BN.json
+
+  settings: [AP, HO, BC, BN]  # Filter to setting codes. null = all.
+                              # AP = adversarial prompt, HO = hidden objective,
+                              # BC = behavioral constraints, BN = benign.
+
+  tags: null                  # Filter to evals whose structural_tags intersect
+                              # this list. The shipped suite is all single-turn.
+                              # Example: [single-turn]  |  null = no filter
+
+  per_setting_limit: null     # Cap samples per setting AFTER other filters.
+                              # Useful for a quick smoke run. Example:
+                              #   AP: 10
+                              #   BN: 10
+                              # null = no cap.
+
+
+# ── Runner ───────────────────────────────────────────────────────────────────
+# Which ITM runner to use and which checkpoint to load.
+#
+# Runner types:
+#   prism     — Activation projection + LoRA decoder. The main method.
+#   text_only_baseline  — No activations: a frontier LLM reads the response
+#                         tail. The "do activations add anything?" control.
+#                         Takes no checkpoint; see configs/main for its fields.
+
+runner:
+  type: prism
+  display_name: MyRun               # Row label on the leaderboard. Defaults to
+                                    # `type`, which would collapse two configs
+                                    # sharing a runner into one row.
+
+  checkpoint: ${PRISM_EVAL_CHECKPOINT_DIR}/prism-qwen3.5-9b-grpo.pt
+                                    # REQUIRED (except text_only_baseline).
+                                    # Keep the ${VAR} form: it is expanded when
+                                    # the file is opened, so the value recorded
+                                    # on the leaderboard is identical on every
+                                    # machine. Run scripts/download_weights.py
+                                    # to populate the directory.
+
+  device: cuda                      # cuda | cpu | cuda:1 ...
+
+
+# ── Scoring ──────────────────────────────────────────────────────────────────
+# exact_match and token_f1 are always on and cheap. The rest are opt-in.
+#
+#   bertscore              — Semantic similarity. Slow; GPU recommended.
+#   judge_llm              — LLM-as-judge, 1.0 / 0.5 / 0.0 per claim, plus
+#                            hallucination scoring. This produces the headline
+#                            reward/coverage/hallucination_rate numbers. See RUBRIC.md.
+#   adversarial_detection  — Did the report flag the adversarial instruction?
+#                            Scored over AP + HO only. Requires judge_llm, and
+#                            reuses its per-bullet scores via an in-process
+#                            cache, so adversarial_judge_model MUST equal
+#                            judge_model. See RUBRIC_ADVDET.md.
+
+scoring:
+  bertscore: false
+  judge_llm: true
+  adversarial_detection: true
+
+  judge_model: null                 # null = use $PRISM_EVAL_MODEL.
+  judge_base_url: null              # null = use $PRISM_EVAL_BASE_URL.
+                                    # Any OpenAI-compatible endpoint works —
+                                    # a local vLLM server or a hosted API.
+
+  adversarial_judge_model: null     # null = inherit judge_model. If set, it
+  adversarial_judge_base_url: null  # must match judge_model exactly.
+
+
+# ── Annotation pre-pass ──────────────────────────────────────────────────────
+# Emits one flat `itm_annotate` root trace per row before the Evaluation runs,
+# and caches the model output so inference runs exactly once per row across
+# both passes. Also the batching knob: rows are run through the GPU in
+# batches of `batch_size`.
+
+annotation:
+  emit_trace: true                  # false = skip the pre-pass entirely.
+  op_name: itm_annotate             # Change to create a separate trace stream.
+  batch_size: 16                    # GPU batch size. Tune to fit your card;
+                                    # the baselines ship with 32-64.
+
+
+# ── Evaluation / leaderboard ─────────────────────────────────────────────────
+# `evaluation_name` is the stable identity of this eval in Weave. Two runs
+# only appear as comparable rows on one leaderboard if their suite, scorer
+# set AND evaluation_name all match — change any of them and the digest
+# changes, which silently moves the row to a different board.
+
+evaluation:
+  evaluation_name: prism_eval_suite_v2_1000
+                                    # null defaults to "{experiment.name}_v1".
+  publish_leaderboard: true         # Ignored when running --offline.
+  leaderboard_name: prism_main_leaderboard
+                                    # null defaults to "{evaluation_name}_leaderboard".
+
+
+# ============================================================================
+# Environment variables (set in .env or your shell — see .env.example)
+#
+#   PRISM_EVAL_CHECKPOINT_DIR  Where downloaded checkpoints live.
+#   PRISM_EVAL_MODEL           Judge model id.
+#   PRISM_EVAL_BASE_URL        OpenAI-compatible endpoint for the judge.
+#   PRISM_EVAL_API_KEY         Judge API key ("EMPTY" for local vLLM).
+#   OPENAI_API_KEY             Only for text_only_baseline's baseline_llm.
+#   WANDB_API_KEY              Only when weave_project is set.
+#   HF_TOKEN                   Only for gated base-model/tokenizer downloads.
+#
+# Ablation overrides (read by the prism runner; see the drivers in
+# scripts/run_ablation_*.sh and docs/ABLATION_REPORT.md):
+#
+#   PRISM_EVAL_ACT_WINDOW_POS         end | start | middle | chunk<K>
+#   PRISM_EVAL_MAX_ACT_TOKENS         Activation window size in tokens.
+#   PRISM_EVAL_ACT_CONTEXT            full | masked_prompt | masked_user
+#                                     | evicted | swapped
+#   PRISM_EVAL_ACT_SWAP_FILE          Donor-prompt pairs for `swapped`.
+#   PRISM_EVAL_ACT_EVICT_PLACEHOLDER  Placeholder user turn for `evicted`
+#                                     (default "...").
+#   PRISM_EVAL_BASE_GEN_MAX_NEW_TOKENS  Base-response generation cap.
+#   PRISM_EVAL_BASE_RESPONSE_CACHE    Reuse cached base responses so an
+#                                     ablation varies only the reading pass.
+# ============================================================================

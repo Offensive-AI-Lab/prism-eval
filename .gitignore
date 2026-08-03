@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+dist/
+build/
+.pytest_cache/
+
+# Secrets — copy .env.example to .env and fill it in
+.env
+
+# Model weights. Fetched with scripts/download_weights.py; $PRISM_EVAL_CHECKPOINT_DIR
+# defaults here, but ignore the extension anywhere in case it points elsewhere.
+checkpoints/
+*.pt
+
+# Run outputs
+results/
+logs/
+*.log
+*.out
+
+# Regenerable suite-build intermediates (scripts/build_suite.py --*-progress)
+data/external/
+
+# XPIA XPIA: the full 25k suite and its pipeline intermediates are large and
+# regenerable from the scripts in reports/xpia/. The smoke suite,
+# scripts and configs are committed.
+data/eval_suite_xpia.json
+data/xpia_progress.jsonl
+reports/xpia/traces.jsonl
+reports/xpia/adversarial.jsonl
+reports/xpia/behavior.jsonl
+reports/xpia/provenance.jsonl
+reports/xpia/analysis.json
+reports/xpia/canonical.jsonl
+# Large pipeline intermediates, but the XPIA source corpus IS shipped.
+*.parquet
+!data/xpia_corpus.parquet
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+
+# Tooling caches and run outputs
+.ruff_cache/

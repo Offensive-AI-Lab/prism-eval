@@ -1,0 +1,35 @@
+# XPIA XPIA SMOKE eval — 20-record pipeline validation on the GRPO checkpoint.
+# Publish OFF (throwaway). Used to catch checkpoint/runner/scorer breakage in
+# minutes before the 3k / 25k runs. Same scorers + checkpoint as the real config.
+
+experiment:
+  name: prism_xpia_smoke
+  notes: "Smoke validation (20 records) on GRPO anti-collapse-20k checkpoint."
+  tags: [xpia, xpia, smoke]
+  weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
+
+suite:
+  path: data/eval_suite_xpia_smoke.json
+  settings: [AP]
+
+runner:
+  type: prism
+  display_name: GRPO_anti_collapse_20k
+  checkpoint: ${PRISM_EVAL_CHECKPOINT_DIR}/prism-qwen3.5-9b-grpo.pt
+  device: cuda
+
+scoring:
+  bertscore: false
+  judge_llm: true
+  adversarial_detection: true
+
+annotation:
+  emit_trace: true
+  op_name: itm_annotate
+  batch_size: 16
+  max_batch_tokens: 16384  # length-aware batching (see eval_xpia.yaml)
+
+evaluation:
+  evaluation_name: prism_xpia_smoke
+  publish_leaderboard: false
+  leaderboard_name: prism_xpia_smoke

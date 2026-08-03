@@ -1,0 +1,54 @@
+# Text-only control — the "do activations add anything?" baseline.
+#
+# Takes the last 128 tokens of the base model's response and asks a frontier
+# LLM to recover the instructions from that text alone. No activations are
+# read. If the activation-based runners don't beat this row, the activations
+# aren't contributing beyond what is already legible in the response tail.
+#
+# Shares suite, scorers, evaluation_name and leaderboard_name with the three
+# activation runners in this directory, so all four produce the same
+# Evaluation digest and land as comparable rows on one leaderboard.
+#
+# Extra env beyond the common judge vars (see .env.example):
+#   OPENAI_API_KEY   — for the `baseline_llm` call below. Point
+#                      `baseline_base_url` elsewhere to use a different
+#                      OpenAI-compatible provider.
+
+experiment:
+  name: text_only_baseline
+  notes: "Text-only control: frontier LLM reads the last 128 response tokens (no activations), on the 1000-record v2 suite (AP/BN/BC/HO × 250)."
+  tags: [eval_suite_v2, prism, text_only_baseline]
+  weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
+
+suite:
+  path: data/eval_suite_v2_final.json
+  settings: [AP, HO, BC, BN]
+
+runner:
+  type: text_only_baseline
+  display_name: "Text-only control (last 128 tok)"
+  # Must match the base model the activation runners probe, so the response
+  # distribution is comparable. It is the `model_id` recorded inside their
+  # checkpoints' config dict.
+  response_model_id: Qwen/Qwen3.5-9B
+  baseline_llm: gpt-5.5
+  tail_tokens: 128
+  device: cuda
+
+scoring:
+  bertscore: false
+  judge_llm: true
+  # Kept on so this row carries the same scorer set — and therefore the same
+  # Evaluation digest — as the three activation runners. Turning it off would
+  # silently move this row onto a separate leaderboard.
+  adversarial_detection: true
+
+annotation:
+  emit_trace: true
+  op_name: itm_annotate
+  batch_size: 16
+
+evaluation:
+  evaluation_name: prism_eval_suite_v2_1000
+  publish_leaderboard: true
+  leaderboard_name: prism_main_leaderboard

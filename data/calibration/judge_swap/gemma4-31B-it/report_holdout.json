@@ -1,0 +1,196 @@
+{
+  "per_annotator": {
+    "annotator_c": {
+      "scorers": {
+        "judge_llm": {
+          "n_claims": 27,
+          "cohens_kappa": 0.8863,
+          "gwets_ac2": 0.881,
+          "spearman_correlation": 0.9254,
+          "agreement_pct": 81.5,
+          "confusion_matrix": {
+            "detected": {
+              "detected": 12,
+              "missed": 0,
+              "partial": 0
+            },
+            "missed": {
+              "detected": 0,
+              "missed": 8,
+              "partial": 2
+            },
+            "partial": {
+              "detected": 3,
+              "missed": 0,
+              "partial": 2
+            }
+          }
+        }
+      }
+    },
+    "annotator_excluded": {
+      "scorers": {
+        "judge_llm": {
+          "n_claims": 10,
+          "cohens_kappa": 0.8235,
+          "gwets_ac2": 0.8101,
+          "spearman_correlation": 0.9545,
+          "agreement_pct": 70.0,
+          "confusion_matrix": {
+            "detected": {
+              "detected": 2,
+              "missed": 0,
+              "partial": 0
+            },
+            "missed": {
+              "detected": 0,
+              "missed": 5,
+              "partial": 0
+            },
+            "partial": {
+              "detected": 3,
+              "missed": 0,
+              "partial": 0
+            }
+          }
+        }
+      }
+    },
+    "annotator_a": {
+      "scorers": {
+        "judge_llm": {
+          "n_claims": 5,
+          "cohens_kappa": 0.8889,
+          "gwets_ac2": 0.881,
+          "spearman_correlation": 0.925,
+          "agreement_pct": 80.0,
+          "confusion_matrix": {
+            "detected": {
+              "detected": 2,
+              "missed": 0,
+              "partial": 0
+            },
+            "missed": {
+              "detected": 0,
+              "missed": 2,
+              "partial": 0
+            },
+            "partial": {
+              "detected": 1,
+              "missed": 0,
+              "partial": 0
+            }
+          }
+        }
+      }
+    }
+  },
+  "combined": {
+    "scorers": {
+      "judge_llm": {
+        "n_claims": 27,
+        "cohens_kappa": 0.8863,
+        "gwets_ac2": 0.881,
+        "spearman_correlation": 0.9254,
+        "agreement_pct": 81.5,
+        "confusion_matrix": {
+          "detected": {
+            "detected": 12,
+            "missed": 0,
+            "partial": 0
+          },
+          "missed": {
+            "detected": 0,
+            "missed": 8,
+            "partial": 2
+          },
+          "partial": {
+            "detected": 3,
+            "missed": 0,
+            "partial": 2
+          }
+        }
+      }
+    }
+  },
+  "ceiling": {
+    "pairs": {
+      "annotator_a vs annotator_excluded": {
+        "n_claims": 5,
+        "n_evals": 1,
+        "cohens_kappa": 1.0,
+        "gwets_ac2": 1.0,
+        "spearman_correlation": 1.0,
+        "agreement_pct": 100.0,
+        "confusion_matrix": {
+          "detected": {
+            "detected": 2,
+            "missed": 0,
+            "partial": 0
+          },
+          "missed": {
+            "detected": 0,
+            "missed": 2,
+            "partial": 0
+          },
+          "partial": {
+            "detected": 0,
+            "missed": 0,
+            "partial": 1
+          }
+        }
+      },
+      "annotator_a vs annotator_c": {
+        "n_claims": 5,
+        "n_evals": 1,
+        "cohens_kappa": 1.0,
+        "gwets_ac2": 1.0,
+        "spearman_correlation": 1.0,
+        "agreement_pct": 100.0,
+        "confusion_matrix": {
+          "detected": {
+            "detected": 2,
+            "missed": 0,
+            "partial": 0
+          },
+          "missed": {
+            "detected": 0,
+            "missed": 2,
+            "partial": 0
+          },
+          "partial": {
+            "detected": 0,
+            "missed": 0,
+            "partial": 1
+          }
+        }
+      },
+      "annotator_excluded vs annotator_c": {
+        "n_claims": 10,
+        "n_evals": 2,
+        "cohens_kappa": 1.0,
+        "gwets_ac2": 1.0,
+        "spearman_correlation": 1.0,
+        "agreement_pct": 100.0,
+        "confusion_matrix": {
+          "detected": {
+            "detected": 2,
+            "missed": 0,
+            "partial": 0
+          },
+          "missed": {
+            "detected": 0,
+            "missed": 5,
+            "partial": 0
+          },
+          "partial": {
+            "detected": 0,
+            "missed": 0,
+            "partial": 3
+          }
+        }
+      }
+    }
+  },
+  "n_rows": 7
+}

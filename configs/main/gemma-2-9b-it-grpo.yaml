@@ -1,0 +1,37 @@
+# Target-model generalisation row: the same PRISM method, GRPO-tuned
+# FINAL checkpoint. Supersedes eval_grpo_gemma2_1000.yaml, whose row was a
+# mid-run snapshot (step 4200, val 0.8766) taken while the 20k GRPO job was
+# still training. The completed run's best is step 11800 (val 0.8943).
+#
+# Checkpoint pinned to the immutable step file, not the best.pt symlink.
+# 
+experiment:
+  name: gemma-2-9b-it-grpo
+  notes: "PRISM trained against Gemma-2-9B-it, hook layer 21."
+  tags: [eval_suite_v2, prism, gemma2]
+  weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
+
+suite:
+  path: data/eval_suite_v2_final.json
+  settings: [AP, HO, BC, BN]
+
+runner:
+  type: prism
+  display_name: "PRISM (Gemma-2-9B-it, GRPO)"
+  checkpoint: ${PRISM_EVAL_CHECKPOINT_DIR}/prism-gemma-2-9b-it-grpo.pt
+  device: cuda
+
+scoring:
+  bertscore: false
+  judge_llm: true
+  adversarial_detection: true
+
+annotation:
+  emit_trace: true
+  op_name: itm_annotate
+  batch_size: 16
+
+evaluation:
+  evaluation_name: prism_eval_suite_v2_1000
+  publish_leaderboard: true
+  leaderboard_name: prism_main_leaderboard

@@ -1,0 +1,10 @@
+{
+  "description": "Adversarial-identifier calibration queue v1 — 50 records total. Each stratum draws records from `from_settings` filtered to those whose identifier picks fall in `k_bucket`. The K=0 strata source from benign settings (BN/BC) since the identifier never returns K=0 on AP/HO records (by construction, every AP has an injection and every HO has a covert goal).",
+  "strata": [
+    {"label": "AP_K=0", "from_settings": ["BN"], "k_bucket": "0",  "n": 7},
+    {"label": "AP_K=1", "from_settings": ["AP"], "k_bucket": "1",  "n": 9},
+    {"label": "AP_K=2+", "from_settings": ["AP"], "k_bucket": "2+", "n": 9},
+    {"label": "HO_K=0", "from_settings": ["BC"], "k_bucket": "0",  "n": 7},
+    {"label": "HO_K=2+", "from_settings": ["HO"], "k_bucket": "2+", "n": 18}
+  ]
+}

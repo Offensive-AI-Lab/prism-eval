@@ -1,0 +1,47 @@
+# Smoke run — the first thing to try.
+#
+# 8 records (2 per setting), judge OFF, Weave OFF. Exercises the whole path:
+# load the checkpoint, run the target model, extract activations, decode an
+# ITM report, score it with the cheap scorers, write results to disk.
+#
+# Needs: a GPU, and PRISM_EVAL_CHECKPOINT_DIR pointing at the downloaded
+# weights. No judge endpoint, no W&B account, no API key.
+#
+#   prism-eval evaluate --config configs/smoke.yaml --offline
+#
+# Expect a couple of minutes, most of it loading the base model. The recall
+# numbers it prints are from exact-match/token-F1 only and are NOT comparable
+# to anything published — for real numbers you need the judge, so use
+# configs/main/qwen3.5-9b-grpo.yaml once you have an endpoint.
+
+experiment:
+  name: smoke
+  notes: "8-record smoke test: no judge, no Weave."
+  tags: [smoke]
+  weave_project: null
+
+suite:
+  path: data/eval_suite_v2_final.json
+  settings: [AP, HO, BC, BN]
+  per_setting_limit: {AP: 2, HO: 2, BC: 2, BN: 2}
+
+runner:
+  type: prism
+  display_name: "smoke"
+  checkpoint: ${PRISM_EVAL_CHECKPOINT_DIR}/prism-qwen3.5-9b-grpo.pt
+  device: cuda
+
+scoring:
+  bertscore: false
+  judge_llm: false            # no endpoint needed
+  adversarial_detection: false # requires judge_llm
+
+annotation:
+  emit_trace: true
+  op_name: itm_annotate
+  batch_size: 8
+
+evaluation:
+  evaluation_name: prism_smoke
+  publish_leaderboard: false
+  leaderboard_name: null
