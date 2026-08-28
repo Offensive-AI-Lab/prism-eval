@@ -1,7 +1,7 @@
 # PRISM-eval
 
 Evaluation harness for **PRISM** — *Recovering Instruction Sets from Language
-Model Activations* ([arXiv:2606.09563](https://arxiv.org/abs/2606.09563)).
+Model Activations* — accepted at **EMNLP 2026 (Main Conference)**; preprint [arXiv:2606.09563](https://arxiv.org/abs/2606.09563).
 
 When an LLM acts as an agent, monitoring it means knowing not just what it
 output but **which instructions are steering it** — including subgoals it
@@ -18,6 +18,11 @@ itself is never modified.
 This repository provides the evaluation suite (1000 records), the scorers, the
 trained checkpoints, and configurations for five comparable rows, including the
 same monitor trained against three different target models.
+
+The **training pipeline** that produces these checkpoints — oracle data
+generation, SFT, and judge-guided GRPO, with the exact recipe behind each
+released file — lives in the sibling repository
+[**Offensive-AI-Lab/prism**](https://github.com/Offensive-AI-Lab/prism).
 
 **`prism-qwen3.5-9b-grpo` is the model to use.** It is the one the paper reports
 and the strongest of the four; the other three exist to isolate the RL stage and
@@ -369,11 +374,14 @@ restriction travels with them regardless of this repo's licence. See
 [DATA_CARD.md](DATA_CARD.md).
 
 ```bibtex
-@article{gressel2026prism,
-  title   = {PRISM: Recovering Instruction Sets from Language Model Activations},
-  author  = {Gilad Gressel and Rahul Pankajakshan and Julia Diament and Efim Hudis and Krishnashree Achuthan and Yisroel Mirsky},
-  journal = {arXiv preprint arXiv:2606.09563},
-  year    = {2026},
-  url     = {https://arxiv.org/abs/2606.09563}
+@inproceedings{gressel2026prism,
+  title     = {PRISM: Recovering Instruction Sets from Language Model Activations},
+  author    = {Gressel, Gilad and Pankajakshan, Rahul and Diament, Julia and
+               Hudis, Efim and Achuthan, Krishnashree and Mirsky, Yisroel},
+  booktitle = {Proceedings of the 2026 Conference on Empirical Methods in
+               Natural Language Processing (EMNLP 2026)},
+  year      = {2026},
+  note      = {Preprint: arXiv:2606.09563},
+  url       = {https://arxiv.org/abs/2606.09563}
 }
 ```

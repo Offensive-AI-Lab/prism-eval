@@ -1,7 +1,7 @@
 # Published results
 
 These are the numbers from the paper — *PRISM: Recovering Instruction Sets from
-Language Model Activations* ([arXiv:2606.09563](https://arxiv.org/abs/2606.09563)),
+Language Model Activations* (EMNLP 2026 Main Conference; preprint [arXiv:2606.09563](https://arxiv.org/abs/2606.09563)),
 Table 1. Target model is **Qwen3.5-9B** throughout; activation-conditioned
 systems read layer-16 residual-stream activations from the final 128 generated
 response tokens.
