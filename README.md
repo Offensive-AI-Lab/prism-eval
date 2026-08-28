@@ -59,7 +59,7 @@ No W&B account needed either way. Results land in
 ## What is being measured
 
 Each record is a prompt with known ground-truth instructions. A **runner**
-produces an *ITM report* — a bulleted list of the instructions it believes the
+produces an *ITM report* (Interpretable Thought Monitoring report) — a bulleted list of the instructions it believes the
 model was given — and scorers compare that report to ground truth.
 
 | Code | Setting | n | What it tests |
