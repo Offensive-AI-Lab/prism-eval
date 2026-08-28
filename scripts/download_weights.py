@@ -38,23 +38,23 @@ ORG = os.environ.get("PRISM_EVAL_WEIGHTS_ORG", "Offensive-AI-Lab")
 MANIFEST: dict[str, tuple[str, str, str]] = {
     # ── Qwen3.5-9B target model ─────────────────────────────────────────
     "prism-qwen3.5-9b-grpo.pt": (
-        "0968b4581517dca88ee229a44dc575240ebfcb8f2b6e2b7d9674c8b3d29a0659",
+        "5bde25517e11ff26130c2d842dd01ebbf7b7ed5c997ce89b949ff05aa1d7d2d1",
         "266M",
         "Main model: PRISM, GRPO-tuned. Target model: Qwen3.5-9B, hook layer 16.",
     ),
     "prism-qwen3.5-9b-sft.pt": (
-        "89f32b047ee2657c69bc3e39b670bb452b23e999a8888592afe011dc486be734",
+        "347cc6c6674a839dd995633a057f9ddb6cb45e153f912671445eed66c6a56002",
         "266M",
         "PRISM, SFT only — GRPO's initialisation. Target model: Qwen3.5-9B, hook layer 16.",
     ),
     # ── Other target models: the generalisation rows ────────────────────
     "prism-gemma-2-9b-it-grpo.pt": (
-        "214817070ea5253f4224145afff44911b528b832271d00924d684ba217662dc9",
+        "45e475030a31286e4b25a3404f04bc17b7624156fa7852a6362fbdf59ce09a4a",
         "458M",
         "PRISM, GRPO-tuned. Target model: Gemma-2-9B, hook layer 21.",
     ),
     "prism-ministral-3-8b-grpo.pt": (
-        "a3263b350aefcdb2b85e4f6ed1d739e99eb4f28046e9a4a35491a2db888c2e5b",
+        "1ad068c4928e503b9526510d1790b839d16dc0de534efa0ff148b9ee221ef128",
         "390M",
         "PRISM, GRPO-tuned. Target model: Ministral-3-8B, hook layer 17.",
     ),

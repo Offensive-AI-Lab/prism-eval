@@ -34,6 +34,33 @@ import torch
 # kept for provenance — they cost nothing and say which step produced this.
 KEEP = ("config", "lora_state", "projection_state", "opt_step", "val_reward", "best_reward")
 
+# `config` is training provenance as well as architecture, so it carries cluster
+# paths, dataset locations and W&B coordinates that should not leave the lab.
+# The runner needs the architecture only, so anything that looks like a local
+# path or a tracking coordinate is dropped. Scrubbing by value rather than by an
+# allowlist keeps unknown-but-needed architecture keys intact.
+WANDB_KEYS = {"wandb_entity", "wandb_project", "wandb_run_name", "wandb_run_id"}
+PATH_MARKERS = ("/mnt/", "/home/", "/scratch/", "/data/", ".jsonl", ".pt")
+
+
+def _looks_like_path(value) -> bool:
+    if isinstance(value, str):
+        return any(m in value for m in PATH_MARKERS)
+    if isinstance(value, (list, tuple)):
+        return any(_looks_like_path(v) for v in value)
+    return False
+
+
+def sanitize_config(cfg: dict) -> tuple[dict, list[str]]:
+    """Drop local paths and tracking coordinates from a checkpoint config."""
+    clean, dropped = {}, []
+    for k, v in cfg.items():
+        if k in WANDB_KEYS or _looks_like_path(v):
+            dropped.append(k)
+        else:
+            clean[k] = v
+    return clean, sorted(dropped)
+
 
 def _tensors(obj, prefix=""):
     """Flatten a nested state dict into {path: tensor}."""
@@ -71,6 +98,11 @@ def strip_one(src: Path, dst: Path) -> bool:
     slim = {k: ck[k] for k in KEEP if k in ck}
     dropped = sorted(k for k in ck if k not in slim)
 
+    if isinstance(slim.get("config"), dict):
+        slim["config"], cfg_dropped = sanitize_config(slim["config"])
+    else:
+        cfg_dropped = []
+
     dst.parent.mkdir(parents=True, exist_ok=True)
     tmp = dst.with_suffix(".pt.tmp")
     torch.save(slim, tmp)
@@ -88,6 +120,8 @@ def strip_one(src: Path, dst: Path) -> bool:
           f"({(1 - after / before) * 100:.0f}% smaller, {detail})")
     if dropped:
         print(f"      dropped: {', '.join(dropped)}")
+    if cfg_dropped:
+        print(f"      config scrubbed: {', '.join(cfg_dropped)}")
     return True
 
 
