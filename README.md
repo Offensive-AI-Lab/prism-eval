@@ -218,7 +218,7 @@ monitored; PRISM itself is the projection and LoRA adapters read off it.
 | **`qwen3.5-9b-grpo`** | `Qwen/Qwen3.5-9B` | 16 | **The published model.** SFT followed by judge-guided GRPO, and the row the paper reports. Use this one. |
 | `qwen3.5-9b-sft` | `Qwen/Qwen3.5-9B` | 16 | Same architecture without the RL stage — "PRISM w/o RL" in the paper. |
 | `gemma-2-9b-it-grpo` | `google/gemma-2-9b-it` | 21 | Whether the method transfers to a second target model. |
-| `ministral-3-8b-grpo` | `mistralai/Ministral-3-8B-Instruct` | 17 | The same question for a third architecture. |
+| `ministral-3-8b-grpo` | `mistralai/Ministral-3-8B-Instruct-2512-BF16` | 17 | The same question for a third architecture. |
 | `text_only_baseline` | `Qwen/Qwen3.5-9B` | — | Reads no activations, only the response text. Control condition. |
 
 All five share one suite, scorer set and `evaluation_name`, so they land on a
