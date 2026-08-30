@@ -31,7 +31,7 @@ behaved here and is reported alongside Gwet's AC1.
 | `configs/follow_queue_spec_v1.json` | Strata: source (bipia/llmail/injecagent) × attack outcome (adv_followed / adv_refused). 100 records, split ~proportional to family size (bipia 52 / llmail 38 / injecagent 10), 50/50 followed/refused within each. |
 | `scripts/calibrate_follow.py` | Snapshot → IAA (human↔human) vs judge↔human: Cohen κ, Gwet AC1, Jaccard/P/R/F1, per-source + per-stratum, worst rows. |
 
-Input data (already on disk from the xpia XPIA run):
+Input data from the XPIA run:
 `reports/xpia/traces.jsonl` (prompt + `model_response` + `instructions`)
 and `reports/xpia/behavior.jsonl` (the judge's `followed`/`adversarial`).
 

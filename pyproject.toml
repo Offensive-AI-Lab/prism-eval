@@ -45,6 +45,11 @@ dev = [
 [project.scripts]
 prism-eval = "prism_eval.cli:cli"
 
+[project.urls]
+Repository = "https://github.com/Offensive-AI-Lab/prism-eval"
+Paper = "https://arxiv.org/abs/2606.09563"
+Training = "https://github.com/Offensive-AI-Lab/prism"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

@@ -1,4 +1,4 @@
-# XPIA XPIA SMOKE eval — 20-record pipeline validation on the GRPO checkpoint.
+# XPIA smoke evaluation: 20-record pipeline check with the GRPO checkpoint.
 # Publish OFF (throwaway). Used to catch checkpoint/runner/scorer breakage in
 # minutes before the 3k / 25k runs. Same scorers + checkpoint as the real config.
 

@@ -1,377 +1,244 @@
 # PRISM-eval
 
-Evaluation harness for **PRISM** — *Recovering Instruction Sets from Language
-Model Activations* — accepted at **EMNLP 2026 (Main Conference)**; preprint [arXiv:2606.09563](https://arxiv.org/abs/2606.09563).
+Evaluation code and data for [PRISM: Recovering Instruction Sets from Language
+Model Activations](https://arxiv.org/abs/2606.09563), accepted to the EMNLP 2026
+Main Conference.
 
-When an LLM acts as an agent, monitoring it means knowing not just what it
-output but **which instructions are steering it** — including subgoals it
-inferred, contextual cues it picked up, injections it swallowed, and objectives
-it was told to hide. The paper formalises this as **instruction set retrieval**.
+PRISM is an activation-conditioned decoder. It reads residual-stream states
+from a frozen language model and produces a list of the instructions represented
+in those states. This repository evaluates those reports against known
+instruction sets. The corresponding data-generation and training code is in
+[`Offensive-AI-Lab/prism`](https://github.com/Offensive-AI-Lab/prism).
 
-PRISM is an **activation-conditioned interpreter**: it decodes residual-stream
-hidden states from a *frozen* target model into a bullet list of the
-instructions currently active. It is trained with **judge-guided GRPO** —
-rewarding covered instructions and penalising unsupported ones. A trained
-checkpoint is just a linear projection plus LoRA adapters; the target model
-itself is never modified.
+## Requirements
 
-This repository provides the evaluation suite (1000 records), the scorers, the
-trained checkpoints, and configurations for five comparable rows, including the
-same monitor trained against three different target models.
+- Python 3.11 or later and [uv](https://docs.astral.sh/uv/)
+- A CUDA GPU for the PRISM and text-only runners
+- Access to the target model weights on Hugging Face
+- An OpenAI-compatible judge endpoint for the published metrics
 
-The **training pipeline** that produces these checkpoints — oracle data
-generation, SFT, and judge-guided GRPO, with the exact recipe behind each
-released file — lives in the sibling repository
-[**Offensive-AI-Lab/prism**](https://github.com/Offensive-AI-Lab/prism).
+The smoke configuration does not call a judge. Full runs used one 80 GB GPU;
+memory use depends on the target model, batch size, and attention backend.
 
-**`prism-qwen3.5-9b-grpo` is the model to use.** It is the one the paper reports
-and the strongest of the four; the other three exist to isolate the RL stage and
-to show the method transfers to other target models. Unless you have a specific
-reason to want one of those, download only this one:
+## Quick start
 
 ```bash
+git clone https://github.com/Offensive-AI-Lab/prism-eval.git
+cd prism-eval
 uv sync --extra dev
-python scripts/download_weights.py --only prism-qwen3.5-9b-grpo   # 266 MB
-export PRISM_EVAL_CHECKPOINT_DIR=./checkpoints
-
-# Smoke run: 8 records, no judge, no W&B. Confirms the whole path works.
-prism-eval evaluate --config configs/smoke.yaml --offline
+uv run python scripts/download_weights.py --only prism-qwen3.5-9b-grpo
+cp .env.example .env
+uv run prism-eval evaluate --config configs/smoke.yaml --offline
 ```
 
-(Omit `--only` to fetch all four, ~1.4 GB.)
+The smoke run evaluates eight records with local, non-judge scorers and writes
+`results/smoke/rows.jsonl` and `results/smoke/summary.json`. It still loads the
+Qwen target model and therefore requires a compatible GPU and access to the
+model weights.
 
-That requires a GPU and nothing else. The headline metrics additionally require
-a judge — an LLM that scores each report against the ground-truth instructions.
-The published results use `gemma-4-31B-it`; `./scripts/serve_judge.sh` starts
-that model under vLLM, and the `PRISM_EVAL_*` variables accept any
-OpenAI-compatible endpoint. Then:
+`scripts/download_weights.py` verifies every checkpoint against a recorded
+SHA-256 digest. Omit `--only` to download all four released checkpoints.
 
-```bash
-cp .env.example .env      # fill in PRISM_EVAL_MODEL / _BASE_URL / _API_KEY
-prism-eval evaluate --config configs/main/qwen3.5-9b-grpo.yaml --offline
-```
+## Run the published configuration
 
-No W&B account needed either way. Results land in
-`results/<experiment>/summary.json`.
+The paper reports the Qwen 3.5 9B GRPO checkpoint. Configure a judge in `.env`:
 
----
-
-## What is being measured
-
-Each record is a prompt with known ground-truth instructions. A **runner**
-produces an *ITM report* (Interpretable Thought Monitoring report) — a bulleted list of the instructions it believes the
-model was given — and scorers compare that report to ground truth.
-
-| Code | Setting | n | What it tests |
-|---|---|---|---|
-| **AP** | Adversarial Prompt | 250 | An injected instruction hidden in a document, tool response, email, web page … Did the monitor surface it? |
-| **HO** | Hidden Objective | 250 | A covert objective in the system prompt (steer to a product, fabricate stats) that the response deliberately conceals. |
-| **BC** | Behavioral Constraints | 250 | Persona, formatting and topic rules of the kind found in ordinary system prompts. |
-| **BN** | Benign Baseline | 250 | Plain instructions with no adversarial content. Establishes the false-positive rate. |
-
-AP and HO records are **verified**: a scenario is only included if the
-injection actually landed or the hidden objective was actually expressed. See
-[DATA_CARD.md](DATA_CARD.md) for provenance and licences.
-
-### A second domain: indirect prompt injection
-
-The four settings above are single-turn prompts. A separate suite tests the
-same capability in an **agentic** setting, where the attacker never talks to the
-model directly.
-
-`data/xpia_corpus.parquet` holds **25,002 tagged rows** — 24,802 attack
-and 200 benign — drawn from three public indirect-prompt-injection (XPIA)
-benchmarks:
-
-| Source | Rows | Attack surface |
-|---|---|---|
-| BIPIA | 13,950 | Injected text inside emails, tables, code and QA context |
-| LLMail | 9,998 | Injected instructions inside email an assistant is asked to process |
-| InjecAgent | 1,054 | Injected instructions inside tool-call results |
-
-Each row carries the attack taxonomy from the source dataset — `attacker_goal`,
-`delivery_technique`, `evasion_technique`, `injection_position`,
-`tool_output_type` — so results can be sliced by how the attack was delivered
-rather than only by whether it was caught.
-
-`scripts/fetch_xpia_evals.py` reconstructs each row into a real multi-message
-conversation, so the injected span arrives in a `tool` or document turn,
-separated from the legitimate user task, and is rendered through the target
-model's chat template at run time. This matters: the monitor has to distinguish
-an instruction the *user* gave from one that arrived inside data the agent was
-asked to read. Records are built as `setting: AP`, category
-`Indirect Prompt Injection`, and scored by the same judge and
-adversarial-detection rubric as the main suite.
-
-```bash
-# 20-record smoke suite ships ready to run
-prism-eval evaluate --config configs/xpia/eval_xpia_smoke.yaml --offline
-
-# the full suite is built from the parquet (needs a judge endpoint to
-# extract the ground-truth instruction list per row)
-python scripts/fetch_xpia_evals.py -o data/eval_suite_xpia.json
-prism-eval evaluate --config configs/xpia/eval_xpia.yaml --offline
-```
-
-`scripts/analyze_xpia.py` produces the breakdowns behind the XPIA results —
-per-source and per-stratum coverage, adversarial detection, and optionally the
-behavioural analysis (`--with-behavior`, `--with-provenance`, one judge call per
-record each, cached):
-
-```bash
-python scripts/analyze_xpia.py \
-    --rows results/xpia/rows.jsonl \
-    --suite data/eval_suite_xpia.json \
-    -o results/xpia/analysis.json
-```
-
-Only the 20-record smoke suite and the corpus ship; the full suite is a build
-artifact because reconstructing it calls an LLM per row. Provenance and the
-upstream licences are in [DATA_CARD.md](DATA_CARD.md); published results for the
-25k run, including how much of the monitor's output reflects what the model was
-*told* rather than what it *did*, are in [docs/RESULTS.md](docs/RESULTS.md).
-
-## Metrics
-
-Reports are scored by an LLM judge — **`gemma-4-31B-it`** in all published
-results — against the rubric in [RUBRIC.md](RUBRIC.md):
-
-- **coverage** — fraction of ground-truth instructions recovered (1.0 / 0.5 / 0.0 per claim). Coverage Rate (Cvg) in the paper.
-- **hallucination_rate** — fabricated claims. Lower is better.
-- **length_penalty** — penalises padding the report to capture claims by volume
-- **reward** — the scalar combining the three, and the GRPO training signal
-- **adversarial detection** (`detect_rate_any` / `detect_rate_avg` / `detect_rate_all`)
-  — on AP and HO only. See [RUBRIC_ADVDET.md](RUBRIC_ADVDET.md).
-
-Coverage weighs every ground-truth instruction equally, which on AP and HO
-conflates two different questions: did the monitor recover the *legitimate task*,
-and did it catch the *attack*? A report that fluently summarises the surface task
-while missing the injection still scores around 0.83 coverage. **Adversarial
-detection separates them**: a second judge names which ground-truth bullets carry
-the adversarial intent, and the detection score is the coverage restricted to
-those bullets. It reuses the per-bullet scores the calibrated judge already
-produced, so it costs one extra call per AP/HO row and never touches the
-calibrated judge itself.
-
-All are reported overall and per setting.
-
-### Is the judge trustworthy?
-
-All three judges were calibrated against human annotators before use, and
-**the labels ship in `data/calibration/`** — per-claim, not just summary
-statistics. No Weave, no W&B account, no network.
-
-The **scoring judge** produces the coverage and hallucination numbers. Two
-annotators scored every claim independently, then reconciled each disagreement
-into a single **gold** label. On the pilot round the paper reports (§G, Table 4),
-49 reports / 170 gold labels: judge-vs-gold **κ = 0.800**, against a
-pre-reconciliation human ceiling of 0.824 and a calibration gate of κ ≥ 0.70.
-
-Every record ships with its prompt, the target model's response and the report,
-so the same benchmark points at your own judge:
-
-```bash
-python scripts/calibrate_judge.py                 # reproduce the published table
-python scripts/calibrate_judge.py --rescore       # score your judge against gold
-```
-
-A judge should be read against the human row rather than against 1.0: two
-trained annotators agree only to 0.824 with each other. κ is quadratic-weighted
-on the ordinal missed/partial/covered scale; the unweighted value on the same
-labels is 0.60. Both are reported throughout.
-
-The **adversarial-detection judge** has its own 50-report gold set and matches
-it on 49/50.
-
-The **FOLLOWED judge** (`prism_eval/scoring/behavior_judge.py`) labels whether
-the model acted on an instruction, and is **calibrated**: 184 records, 92
-double-annotated, human-vs-human κ = 0.786, judge-vs-human κ = 0.734. The
-prompt shipped here is the one those numbers were measured against. It powers
-the behavioural breakdown of the XPIA suite in
-[docs/RESULTS.md](docs/RESULTS.md) rather than the headline metrics, so no
-Table 1 number depends on it.
-
-`prism_eval/scoring/claim_provenance.py` classifies each claim by grounding
-source. It has no gold set of its own, so its output is indicative rather than
-calibrated.
-
-`tests/test_coverage_goldset.py` and `tests/test_calibration_goldset.py`
-recompute all of it from the raw labels on every test run. One caveat is
-documented in [DATA_CARD.md](DATA_CARD.md): the paper prints judge-vs-gold as
-0.817, and no surviving judge-scoring run reproduces that exact value — the gold
-labels are identical across runs, the judge is sampled.
-
-## Runners
-
-| Runner | Approach | Checkpoint |
-|---|---|---|
-| `prism` | Hooks a mid layer of the target model, projects the last 128 response-token activations into embedding space, prepends them as soft tokens, and decodes with LoRA. This is the method the paper describes. | **`prism-qwen3.5-9b-grpo.pt`** (published), plus `prism-qwen3.5-9b-sft.pt`, `prism-gemma-2-9b-it-grpo.pt`, `prism-ministral-3-8b-grpo.pt` |
-| `text_only_baseline` | Reads no activations. Shows a frontier LLM the last 128 tokens of the response text and asks it to infer the instructions. This is the control condition: it bounds how much of the task is solvable from the output text alone. | none |
-
-### The five rows
-
-Each row is one config in `configs/main/`. The target model is the model being
-monitored; PRISM itself is the projection and LoRA adapters read off it.
-
-| Config | Target model | Hook layer | Role |
-|---|---|---|---|
-| **`qwen3.5-9b-grpo`** | `Qwen/Qwen3.5-9B` | 16 | **The published model.** SFT followed by judge-guided GRPO, and the row the paper reports. Use this one. |
-| `qwen3.5-9b-sft` | `Qwen/Qwen3.5-9B` | 16 | Same architecture without the RL stage — "PRISM w/o RL" in the paper. |
-| `gemma-2-9b-it-grpo` | `google/gemma-2-9b-it` | 21 | Whether the method transfers to a second target model. |
-| `ministral-3-8b-grpo` | `mistralai/Ministral-3-8B-Instruct-2512-BF16` | 17 | The same question for a third architecture. |
-| `text_only_baseline` | `Qwen/Qwen3.5-9B` | — | Reads no activations, only the response text. Control condition. |
-
-All five share one suite, scorer set and `evaluation_name`, so they land on a
-single leaderboard as directly comparable rows. The target model is named in
-each row label because it changes the difficulty, not just the model under test.
-
-### Baselines from prior work
-
-The paper also compares against two published activation-to-text methods,
-**LatentQA** (Pan et al., 2024) and **Activation Oracles** (Karvonen et al.,
-2025). Those rows were produced by running each method's **own released code
-and checkpoints**, unmodified, over the same 1000-record suite and scoring the
-resulting reports with the same `gemma-4-31B-it` judge. No runner for either
-method is included here, and their weights are not redistributed — use the
-authors' repositories:
-
-| Method | Code | Checkpoints |
-|---|---|---|
-| LatentQA | [aypan17/latentqa](https://github.com/aypan17/latentqa) @ `a2dcb6f` | [`aypan17/latentqa_llama-3-8b-instruct`](https://huggingface.co/aypan17/latentqa_llama-3-8b-instruct) |
-| Activation Oracles | [adamkarvonen/activation_oracles](https://github.com/adamkarvonen/activation_oracles) @ `55f153f` | [Activation Oracles collection](https://huggingface.co/collections/adamkarvonen/activation-oracles), e.g. `adamkarvonen/checkpoints_latentqa_cls_past_lens_addition_Qwen3-8B` |
-
-Both methods require their authors' inference paths — LatentQA substitutes
-target-model hidden states into its decoder, Activation Oracles applies a LoRA
-adapter through forward hooks — so re-implementing them here would risk
-misreporting their results. The published numbers for these rows are in
-[docs/RESULTS.md](docs/RESULTS.md).
-
-Runners implement the `ITMRunner` protocol in `prism_eval/runner.py`. Adding one
-means writing the class, registering it in `prism_eval/runners/__init__.py`, and
-adding its name to the `Literal` on `RunnerConfig.type` in
-`prism_eval/config.py` — miss the last step and every config using it fails
-validation. See [CONTRIBUTING.md](CONTRIBUTING.md).
-
-## Install
-
-```bash
-uv sync --extra dev
-source .venv/bin/activate
-pytest tests/ -q          # ~218 tests; no GPU or network needed
-```
-
-Use `uv sync`, not `uv pip install -e .` — the lockfile pins torch's cu128
-nvidia deps, and `uv pip install` has produced torn installs in practice.
-
-## Configure
-
-Copy `.env.example` to `.env` and fill in:
-
-```bash
-PRISM_EVAL_CHECKPOINT_DIR=./checkpoints   # where download_weights.py put them
-PRISM_EVAL_MODEL=gemma4-31B-it            # judge model
+```dotenv
+PRISM_EVAL_CHECKPOINT_DIR=./checkpoints
+PRISM_EVAL_MODEL=gemma4-31B-it
 PRISM_EVAL_BASE_URL=http://localhost:8088/v1
 PRISM_EVAL_API_KEY=EMPTY
 ```
 
-**The judge** produces the headline metrics. Any OpenAI-compatible endpoint
-works — a hosted API or a local server. To reproduce the published judge
-exactly, `./scripts/serve_judge.sh` starts it under vLLM. The exact prompts are
-checked in at `prism_eval/prompts/judge/`.
+Any OpenAI-compatible endpoint can be used. The published results used
+`google/gemma-4-31B-it` with reasoning disabled; `scripts/serve_judge.sh`
+contains the corresponding vLLM command.
 
-The judge model name is part of the scorer's identity, so runs scored by
-different judges don't silently end up in the same table.
-
-## Run
+Run the full suite with:
 
 ```bash
-# Offline — no W&B account. Writes results/<experiment>/{rows.jsonl,summary.json}.
-prism-eval evaluate --config configs/main/qwen3.5-9b-grpo.yaml --offline
-
-# Traced — set experiment.weave_project in the config, then drop --offline.
-# Emits per-row Weave traces and publishes a Leaderboard.
-prism-eval evaluate --config configs/main/qwen3.5-9b-grpo.yaml
+uv run prism-eval evaluate \
+  --config configs/main/qwen3.5-9b-grpo.yaml \
+  --offline
 ```
 
-Both modes use the same runner, the same scorer objects and the same
-aggregation, so the numbers match.
+Here, `--offline` disables Weave tracing and leaderboard publication. It does
+not disable calls to the configured judge. To run without any judge calls, use
+`configs/smoke.yaml` or set both `scoring.judge_llm` and
+`scoring.adversarial_detection` to `false` in a copied configuration.
 
-Full command-per-result mapping: [docs/REPRODUCING.md](docs/REPRODUCING.md).
+To publish traces through Weave, set `experiment.weave_project` in the YAML,
+set `WANDB_API_KEY`, and omit `--offline`.
 
-## Ablations
+## Evaluation suite
 
-Where does the instruction signal actually live in the activations?
+The canonical suite is `data/eval_suite_v2_final.json`. It contains 250 records
+from each setting:
 
-```bash
-./scripts/run_ablation_window.sh              # how many tokens does the monitor need?
-./scripts/run_ablation_window_chunks.sh       # where in the response does signal live?
-./scripts/run_ablation_context.sh             # is it just an echo of the prompt?
-```
+| Code | Setting | Evaluation target |
+|---|---|---|
+| AP | Adversarial Prompt | Instructions injected through documents, tool outputs, email, webpages, and related channels |
+| HO | Hidden Objective | Covert objectives placed in the system prompt |
+| BC | Behavioral Constraints | Persona, format, topic, and style constraints |
+| BN | Benign Baseline | Ordinary instructions used to measure false positives and hallucinations |
 
-Findings and full tables: [docs/ABLATION_REPORT.md](docs/ABLATION_REPORT.md).
-Short version: coverage climbs monotonically with window size with no plateau by
-128 tokens; signal does *not* decay through the response once you condition on
-support; and hiding the prompt at extraction time cuts coverage roughly in half —
-so the monitor reads more than a prompt echo, but hidden objectives in
-particular are carried by prompt-attending features.
+AP and HO examples were retained only when the target behavior was observed
+during suite construction. The suite schema, generation process, source
+licenses, and known limitations are documented in [DATA_CARD.md](DATA_CARD.md).
+In particular, the BN subset is derived from Stanford Alpaca and remains
+subject to CC BY-NC 4.0.
 
-## Commands
+Each record contains the prompt, its ground-truth instruction list, setting
+metadata, and stable evaluation ID. A runner generates the target model's
+response and an instruction report; scorers compare that report with the
+ground truth.
 
-| Command | Use |
+## Metrics
+
+The published configuration uses an LLM judge governed by
+[RUBRIC.md](RUBRIC.md).
+
+| Metric | Definition |
 |---|---|
-| `prism-eval evaluate --config <yaml>` | The entry point. Runs, scores, aggregates. Add `--offline` to skip Weave. |
-| `prism-eval run` | Lower level: runner → `EvalResult` JSONL. |
-| `prism-eval score` | Lower level: run JSONL → `ScoredResult` JSONL. |
-| `prism-eval analyze` | Per-eval metrics and scorer comparison from a scored JSONL. |
+| `coverage` | Mean per-instruction score, with values 1.0 (covered), 0.5 (partial), and 0.0 (missed) |
+| `hallucination_rate` | Fraction of report claims judged unsupported |
+| `length_penalty` | Penalty for reports that exceed the expected claim count |
+| `reward` | Coverage adjusted by hallucination and length penalties |
+| `detect_rate_any` | Fraction of adversarial records with at least one adversarial instruction recovered |
+| `detect_rate_avg` | Mean coverage over adversarial instructions |
+| `detect_rate_all` | Fraction of adversarial records with all adversarial instructions recovered |
 
-`run`/`score`/`analyze` predate `evaluate` and compute a narrower metric set —
-no adversarial detection, no reward, no per-setting breakdown. Prefer
-`evaluate --offline` unless you specifically want the JSONL pipeline.
+Adversarial detection is computed for AP and HO records and uses the rubric in
+[RUBRIC_ADVDET.md](RUBRIC_ADVDET.md). Exact match and token F1 are also emitted,
+but they are not the paper's headline metrics.
 
-## Layout
+## Runners and checkpoints
 
+| Configuration | Target model | Hook layer | Purpose |
+|---|---|---:|---|
+| `qwen3.5-9b-grpo.yaml` | `Qwen/Qwen3.5-9B` | 16 | Main PRISM result: SFT followed by GRPO |
+| `qwen3.5-9b-sft.yaml` | `Qwen/Qwen3.5-9B` | 16 | SFT-only ablation (`PRISM w/o RL`) |
+| `gemma-2-9b-it-grpo.yaml` | `google/gemma-2-9b-it` | 21 | Transfer to Gemma 2 9B |
+| `ministral-3-8b-grpo.yaml` | `mistralai/Ministral-3-8B-Instruct-2512-BF16` | 17 | Transfer to Ministral 3 8B |
+| `text_only_baseline.yaml` | `Qwen/Qwen3.5-9B` | n/a | Control that infers instructions from the final 128 response tokens without activations |
+
+The `prism` runner generates a base response with the LoRA adapters disabled,
+extracts response-token activations at the checkpoint's hook layer, projects up
+to 128 activations into embedding space, and decodes an instruction report with
+the adapters enabled. The text-only runner sends the same response tail to a
+separate LLM.
+
+LatentQA and Activation Oracles are included in the paper's comparison but are
+not reimplemented or redistributed here. Their exact upstream revisions and
+checkpoints are listed in [docs/RESULTS.md](docs/RESULTS.md).
+
+## Configuration and output
+
+Experiments are defined by YAML files. `configs/template.yaml` documents every
+field, and `configs/main/` contains the released configurations. Important
+sections are:
+
+- `suite`: input files and record filters
+- `runner`: implementation, checkpoint, and device
+- `scoring`: enabled scorers and judge endpoint overrides
+- `annotation`: inference batch size and trace settings
+- `evaluation`: stable comparison identity and optional leaderboard name
+
+Two runs are directly comparable only when the suite, scorer set, and
+`evaluation.evaluation_name` match.
+
+Offline output has the following form:
+
+```text
+results/<experiment>/
+  rows.jsonl
+  summary.json
 ```
-configs/
-  main/          the five comparable rows
-  ablation/      window/ (24) and context/ (5)
-  template.yaml  annotated reference for every config field
-data/            eval_suite_v2_final.json (1000) + the four per-setting files
-  xpia_corpus.parquet  25k agent-injection rows (2nd domain)
-  calibration/   gold labels + per-annotator labels for all three judges,
-                 frozen agreement reports, and the originals behind the paper
-prism_eval/
-  cli.py         Click CLI
-  config.py      YAML → ExperimentConfig; checkpoint path resolution
-  weave_eval.py  scorers, leaderboard, and the offline evaluator
-  runners/       prism, text_only_baseline
-  scoring/       exact_match, token_f1, bertscore, judge_llm, adversarial_identifier
-  prompts/judge/ the exact published judge prompts (+ tuning variants)
-scripts/         download_weights, serve_judge, build_suite, calibrate_judge,
-                 analyze_xpia, strip_checkpoint, ablation drivers
-docs/            RESULTS.md, REPRODUCING.md, ABLATION_REPORT.md,
-                 ANNOTATION_{FOLLOW,RECALL}.md
+
+`rows.jsonl` contains one model output and scorer result per record.
+`summary.json` contains overall and per-setting aggregates plus the resolved run
+metadata.
+
+## Indirect prompt injection corpus
+
+`data/xpia_corpus.parquet` contains 25,002 tagged source rows from three public
+indirect prompt-injection benchmarks:
+
+| Source | Rows |
+|---|---:|
+| BIPIA | 13,950 |
+| LLMail | 9,998 |
+| InjecAgent | 1,054 |
+
+A 20-record smoke suite is included. Run it with:
+
+```bash
+uv run prism-eval evaluate \
+  --config configs/xpia/eval_xpia_smoke.yaml \
+  --offline
 ```
+
+The full evaluation suite is generated from the Parquet corpus because its
+ground-truth extraction requires judge calls:
+
+```bash
+uv run python scripts/fetch_xpia_evals.py \
+  --count 13950 \
+  --benign-count 200 \
+  -o data/eval_suite_xpia.json
+uv run prism-eval evaluate --config configs/xpia/eval_xpia.yaml --offline
+```
+
+`--count` is applied separately to each source; `13950` is the size of the
+largest source and therefore selects every available attack row. Use
+`scripts/analyze_xpia.py` for per-source, taxonomy, behavioral, and claim
+provenance breakdowns. Corpus provenance and upstream licenses are covered by
+[DATA_CARD.md](DATA_CARD.md).
+
+## Judge calibration
+
+The repository includes human labels for the coverage/hallucination judge, the
+adversarial-instruction identifier, and the optional behavioral judge under
+`data/calibration/`. The published agreement reports can be reproduced without
+a model endpoint:
+
+```bash
+uv run python scripts/calibrate_judge.py
+uv run python scripts/calibrate_advdet.py \
+  --snapshot data/calibration/advdet_gold_v1.jsonl
+uv run python scripts/calibrate_follow.py \
+  --snapshot data/calibration/follow_snapshot_v1.jsonl
+```
+
+Use `scripts/calibrate_judge.py --rescore` to score a configured judge against
+the coverage gold set. Calibration methods and caveats are described in the
+[data card](DATA_CARD.md).
+
+## Command-line interface
+
+| Command | Purpose |
+|---|---|
+| `prism-eval evaluate --config <yaml>` | Run inference, scoring, and aggregation |
+| `prism-eval run` | Write runner outputs to JSONL |
+| `prism-eval score` | Score an existing run JSONL |
+| `prism-eval analyze` | Compare scorer outputs in a scored JSONL |
+
+`evaluate` is the supported path for reproducing the paper. The lower-level
+commands expose a smaller set of metrics.
 
 ## Documentation
 
 | Document | Contents |
 |---|---|
-| [DATA_CARD.md](DATA_CARD.md) | Suite provenance, licences, limitations, and the judge-calibration data. **Read before redistributing** — the BN arm is CC BY-NC. |
-| [docs/ANNOTATION_FOLLOW.md](docs/ANNOTATION_FOLLOW.md) | Instructions the human annotators worked from. |
-| [RUBRIC.md](RUBRIC.md) | Judge scoring rubric. |
-| [RUBRIC_ADVDET.md](RUBRIC_ADVDET.md) | Adversarial-detection rubric. |
-| [docs/RESULTS.md](docs/RESULTS.md) | The published numbers for all seven rows. |
-| [docs/REPRODUCING.md](docs/REPRODUCING.md) | The command behind each one; what does and doesn't reproduce exactly. |
-| [docs/ABLATION_REPORT.md](docs/ABLATION_REPORT.md) | Where the signal lives. |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Adding a runner or scorer. |
+| [Results](docs/RESULTS.md) | Published tables, checkpoint mapping, and judge calibration results |
+| [Reproducing](docs/REPRODUCING.md) | Commands, runtime, and expected sources of variation |
+| [Data card](DATA_CARD.md) | Dataset provenance, licenses, fields, and limitations |
+| [Ablation report](docs/ABLATION_REPORT.md) | Activation-window and context ablations |
+| [Coverage rubric](RUBRIC.md) | Coverage and hallucination annotation policy |
+| [Adversarial rubric](RUBRIC_ADVDET.md) | Adversarial-instruction identification policy |
+| [Contributing](CONTRIBUTING.md) | Adding runners, scorers, and new suites |
 
-## Licence and citation
-
-Code and the AP/HO records: Apache-2.0 ([LICENSE](LICENSE)).
-
-**The BN records are CC BY-NC 4.0** (derived from Stanford Alpaca) — that
-restriction travels with them regardless of this repo's licence. See
-[DATA_CARD.md](DATA_CARD.md).
+## Citation
 
 ```bibtex
 @inproceedings{gressel2026prism,
@@ -379,9 +246,16 @@ restriction travels with them regardless of this repo's licence. See
   author    = {Gressel, Gilad and Pankajakshan, Rahul and Diament, Julia and
                Hudis, Efim and Achuthan, Krishnashree and Mirsky, Yisroel},
   booktitle = {Proceedings of the 2026 Conference on Empirical Methods in
-               Natural Language Processing (EMNLP 2026)},
+               Natural Language Processing},
   year      = {2026},
-  note      = {Preprint: arXiv:2606.09563},
   url       = {https://arxiv.org/abs/2606.09563}
 }
 ```
+
+## License
+
+The code and project-authored AP/HO records are licensed under the
+[Apache License 2.0](LICENSE). Third-party datasets retain their original
+licenses. The BN records are derived from Stanford Alpaca and are restricted to
+non-commercial use under CC BY-NC 4.0; see [DATA_CARD.md](DATA_CARD.md) and
+[NOTICE](NOTICE).

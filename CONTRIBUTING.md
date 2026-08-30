@@ -1,25 +1,22 @@
-# Extending PRISM-eval
+# Contributing to PRISM-eval
 
-How to add a runner, add a scorer, or add eval records. For what the benchmark
-measures, start with the [README](README.md).
+This guide covers extensions to the evaluation harness. For the benchmark
+definition and released configurations, start with the [README](README.md).
 
-## Setup
+## Development setup
 
 ```bash
 uv sync --extra dev
-source .venv/bin/activate
-pytest tests/ -q      # ~191 tests, no GPU or network required
+uv run pytest tests -q
 ```
 
-The test suite runs entirely on fakes — a `_FakeRunner` stands in for the GPU
-and stub clients stand in for the judge — so it stays fast and offline. Keep it
-that way: a test that needs a checkpoint or a live endpoint belongs in
-`docs/REPRODUCING.md` as a documented command, not in `tests/`.
+Unit tests must not require model checkpoints, GPU access, credentials, or live
+API endpoints. Document hardware-dependent reproduction commands in
+[docs/REPRODUCING.md](docs/REPRODUCING.md).
 
-## Adding a runner
+## Add a runner
 
-A runner turns an `EvalRecord` into an `EvalResult` carrying an `itm_report`.
-That is the entire contract — `prism_eval/runner.py`:
+A runner implements the protocol in `prism_eval/runner.py`:
 
 ```python
 class ITMRunner(Protocol):
@@ -27,105 +24,82 @@ class ITMRunner(Protocol):
     def run_eval(self, eval_record: EvalRecord) -> EvalResult: ...
 ```
 
-1. Write the class in `prism_eval/runners/your_runner.py`. Model components
-   shared by the activation-bridge runners (hooks, projections)
-   live in `prism_eval/runners/models.py` — reuse them rather than re-deriving.
-2. Register it in **one** place, `prism_eval/runners/__init__.py`: add the name
-   to `RUNNER_TYPES` and a branch to `build_runner`. Both the Weave path and
-   the offline path resolve through it, so nothing else needs touching.
-3. Add the name to the `Literal` on `RunnerConfig.type` in
-   `prism_eval/config.py` (there's a comment on each pointing at the other).
-4. Add a config under `configs/`. To be comparable with the published rows it
-   must match `configs/main/*.yaml` on `suite.path`, `suite.settings`, the
-   scorer set, and `evaluation.evaluation_name` — see "Comparability" below.
+To add one:
 
-**Optional but worth it:** implement `run_batch(records) -> list[EvalResult]`.
-If present, `_run_inference_batches` uses it and GPU work batches instead of
-looping one record at a time. `scripts/sanity_batch_vs_sequential.py` checks
-that your batched path agrees with `run_eval`; run it before trusting a new
-`run_batch`.
+1. Create `prism_eval/runners/<name>.py`.
+2. Register the runner in `RUNNER_TYPES` and `build_runner` in
+   `prism_eval/runners/__init__.py`.
+3. Add its name to `RunnerConfig.type` in `prism_eval/config.py`.
+4. Add a configuration under `configs/`.
+5. Add tests for setup, single-record inference, and configuration validation.
 
-Runners that need no checkpoint (like `text_only_baseline`) encode their
-identity in `RunnerConfig.identity()` instead, so that changing a parameter
-produces a distinct leaderboard row.
+Implement `run_batch(records) -> list[EvalResult]` when the model supports
+batched inference. It must preserve input order and return results equivalent to
+repeated `run_eval` calls.
 
-## Adding a scorer
+A runner without a checkpoint must encode all behavior-changing parameters in
+`RunnerConfig.identity()`. This keeps distinct systems from sharing a result or
+leaderboard identity.
 
-Scorers are `weave.Scorer` subclasses in `prism_eval/weave_eval.py`. A scorer
-declares whichever dataset-row keys it needs in its `score` signature, plus
-`output`:
+## Add a scorer
+
+The end-to-end evaluator uses `weave.Scorer` subclasses in
+`prism_eval/weave_eval.py`. A scorer declares the dataset fields it consumes in
+its `score` signature and returns a dictionary of per-record values:
 
 ```python
 class MyScorer(weave.Scorer):
     @weave.op()
-    def score(self, instructions: list[str], output: dict, setting: str) -> dict:
+    def score(self, instructions: list[str], output: dict) -> dict:
         return {"my_metric": ...}
 
     def summarize(self, score_rows: list[dict]) -> dict:
-        return {"my_metric": mean(r["my_metric"] for r in score_rows)}
+        return {"my_metric": ...}
 ```
 
-Both execution paths dispatch by signature introspection, so you get the keys
-you asked for and nothing else. Available keys are whatever
-`eval_record_to_row` produces: `eval_id`, `dataset_type`, `setting`,
-`difficulty`, `prompt`, `prompt_turns`, `instructions`, `context_length`.
+Register the scorer in the `evaluate` command in `prism_eval/cli.py`, add a
+field to `ScoringConfig`, and expose any leaderboard columns in
+`DEFAULT_LEADERBOARD_METRICS`.
 
-`summarize` is what produces leaderboard columns **and** the offline
-`summary.json` — implement it, or aggregation falls back to meaning every
-numeric field.
+All scorers must accept `output`, even when they do not use it. Scorer ordering
+is also significant: `AdversarialDetectionScorer` consumes cached per-claim
+scores from `JudgeLLMScorer`, so it must run after that scorer with the same
+judge identity.
 
-Wire the scorer into `evaluate` in `prism_eval/cli.py` behind a `ScoringConfig`
-flag, and add its columns to `DEFAULT_LEADERBOARD_METRICS`.
+The offline and Weave paths must use the same scorer implementation and
+aggregation logic.
 
-Two constraints worth knowing:
+## Add evaluation records
 
-- **Scorer order matters.** `AdversarialDetectionScorer` reads the per-bullet
-  scores `JudgeLLMScorer` writes to an in-process cache, so it must come after
-  it in the list and use the same `judge_model`. The CLI enforces both.
-- **Every `score` must accept `output`** even if unused — Weave's Scorer
-  contract requires it, and omitting it fails mid-run rather than at startup.
+The schema is defined by `EvalSuite` and `EvalRecord` in
+`prism_eval/schema.py`. Ground-truth instructions belong in
+`instruction_sources["original"]` and should be phrased as individual
+directives.
 
-## Adding eval records
+Do not modify `data/eval_suite_v2_final.json` in place. It is the artifact used
+for the published results. Add a new versioned suite and configuration instead.
 
-The suite format is `EvalSuite` / `EvalRecord` in `prism_eval/schema.py`.
-Ground truth is `instruction_sources["original"]`: the list of instructions the
-model was actually given, phrased as directives.
+For adversarial settings, retain a record only after verifying that the target
+behavior occurred. Include a benign comparison arm when reporting detection or
+false-positive metrics. Record the source, license, construction process, and
+known selection effects in [DATA_CARD.md](DATA_CARD.md).
 
-`scripts/build_suite.py` builds the shipped settings and is the place to add a
-new one — extend `SETTING_META`, add a fetcher or generator, and give the
-records an `eval_id` prefix.
+## Preserve comparability
 
-Two rules that keep the benchmark honest:
+Two runs are comparable only when all of the following match:
 
-- **Verify adversarial records.** AP and HO records only ship if the injection
-  actually landed / the objective was actually expressed, checked by running
-  the prompt through the base model. An unverified adversarial record measures
-  nothing.
-- **Keep a benign arm.** Without BN-style records, hallucination and
-  false-positive rates are unmeasurable and a detector that flags everything
-  looks perfect.
+- suite contents and filters
+- scorer set and scorer configuration
+- `evaluation.evaluation_name`
+- judge identity for judge-scored metrics
 
-Do not edit `data/eval_suite_v2_final.json` in place. Every published number is
-computed against that exact file, and `tests/test_loader.py::TestCanonicalSuite`
-will fail if its shape changes. Ship a new file instead. If you need a filtered
-view at runtime, use `prism_eval.loader.filter_evals` or `suite.per_setting_limit`.
+Changing the suite, judge prompt, judge model, reward formula, or scorer set
+defines a new evaluation condition. Use a new explicit `evaluation_name` and
+leaderboard name, and document the difference.
 
-## Comparability
+## Pull requests
 
-Two runs are comparable only if their **suite**, **scorer set** and
-**`evaluation_name`** all match. Change any one and the evaluation digest
-changes, which silently moves the row onto a different leaderboard rather than
-raising an error. This is the single easiest thing to get wrong.
-
-When you intentionally change something that shifts the digest — judge prompt,
-judge model, reward formula, scorer set, suite file — bump
-`leaderboard_name` across the affected configs, and suffix it with *what*
-changed rather than a version number: `prism_main_leaderboard_judge_v3`, not
-`_v2`.
-
-## Style
-
-Match the file you're editing: same comment density, same naming, same idiom.
-Comments here explain *why*, especially where behaviour is non-obvious
-(cache-then-consume, scorer ordering, the unexpanded checkpoint identity). Keep
-that — those comments are load-bearing.
+Keep changes focused and avoid committing generated results, checkpoints,
+credentials, or local paths. Update the README, data card, rubric, or
+reproduction guide whenever a user-visible interface or evaluation condition
+changes.

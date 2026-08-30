@@ -23,18 +23,14 @@ Values are split means; each row is one validation-selected checkpoint.
 
 BN = Benign · BC = Behavioral Constraints · HO = Hidden Objectives · AP = Adversarial Prompt.
 
-**Reading it.** PRISM leads on reward and coverage in every setting. Some
-baselines post lower hallucination, but largely because they collapse the prompt
-into a one- or two-line summary — little room for unsupported detail, and most
-active instructions missed. PRISM recovers far more instructions while keeping
-unsupported additions rare. The RL step is what closes the gap on the
-security-relevant settings: AP coverage goes 0.531 → 0.671 and AP hallucination
-drops 0.086 → 0.025 relative to PRISM w/o RL.
+PRISM has the highest reward and coverage in each setting. Relative to PRISM
+without RL, AP coverage increases from 0.531 to 0.671 and AP hallucination
+decreases from 0.086 to 0.025. Several baselines have lower hallucination rates
+but also substantially lower coverage.
 
-The **GPT-5.5 text-only** row is the control that matters: it sees the response
-but no hidden states. Its benign coverage is high (0.919 — benign instructions
-are largely legible in the output) but it collapses on the adversarial settings,
-which is the case for reading activations rather than text.
+The GPT-5.5 text-only control sees the response but no hidden states. Its benign
+coverage is 0.919, while coverage is lower on the adversarial settings (0.461
+for HO and 0.536 for AP).
 
 ## Mapping the paper's names onto this repo
 
@@ -86,21 +82,20 @@ reproduces the paper where the checkpoint is unchanged:
 
 All three metrics land within 0.001.
 
-Your own run of `qwen3.5-9b-grpo` will land near, but not exactly on, the PRISM
-row. Generation and judging are both sampled, and the shipped checkpoint is
-validation-selected. Treat a run as a check that the pipeline works rather than
-a bit-for-bit target; see [REPRODUCING.md](REPRODUCING.md) for what is and isn't
-deterministic.
+A repeated `qwen3.5-9b-grpo` run should be close to, but may not exactly match,
+the PRISM row. Generation is greedy in the released evaluator, but GPU kernels
+can affect borderline tokens and judge calls can vary. See
+[REPRODUCING.md](REPRODUCING.md) for expected sources of variation.
 
 Two rows in this repo have no counterpart in the paper at all —
 `configs/main/gemma-2-9b-it-grpo.yaml` and `configs/main/ministral-3-8b-grpo.yaml` apply the same
 method to Gemma-2-9B and Ministral-3-8B target models. They exist to show the
 approach transfers; there are no published numbers to compare them against.
 
-## Indirect prompt injection (xpia XPIA, 25k)
+## Indirect prompt injection (XPIA)
 
-A second domain, not part of the paper's Table 1: 24,953 agentic
-indirect-injection records built from BIPIA, LLMail and InjecAgent (see
+A second domain, not part of the paper's Table 1: 24,953 successfully evaluated
+indirect-injection records built from BIPIA, LLMail, and InjecAgent (see
 [../DATA_CARD.md](../DATA_CARD.md)). Run with `qwen3.5-9b-grpo` and scored by
 the same `gemma-4-31B-it` judge.
 
@@ -111,40 +106,38 @@ the same `gemma-4-31B-it` judge.
 | InjecAgent | 1,054 | **0.667** | 0.026 | **20.2%** |
 | **Overall** | **24,953** | **0.772** | **0.040** | — |
 
-InjecAgent is the hard slice, roughly 11 points below the others — but its
-total-miss rate is near zero. The failure mode is *partial* recovery rather
-than blind spots.
+InjecAgent coverage is approximately 0.11 lower than BIPIA and LLMail. Most
+errors on that subset are partial recoveries rather than complete misses.
 
 **Conditioned on the attack actually firing**, adversarial-instruction coverage
 is 94.5% / 94.1% / 81.1% (any / avg / all, n = 9,494 rows), against 98.7% /
 98.6% / 93.7% on benign instructions (n = 21,216). The attack success rate over
 the corpus is 33.2%.
 
-### Does it report what the model was told, or what it did?
+### Instruction presence and model behavior
 
-The natural objection to any activation monitor. Measured three ways on this
-corpus, all pointing the same direction — **primarily what the model did, with a
-real but weaker signal for what it was merely told**:
+The behavioral analysis indicates stronger recovery for instructions the model
+followed, with weaker but nonzero recovery for instructions that were present
+but not followed:
 
 - Instructions the model followed are recovered at 0.87–0.96 mean coverage,
   against 0.48–0.54 for those it did not.
 - That gap persists (0.43) within *identical* instruction text across 285
   matched templates, so it is not explained by not-followed instructions simply
   being harder.
-- **46.5% of injections the model never acted on are still fully named.** A
-  monitor that only read behaviour would score approximately zero here.
+- 46.5% of injections that the model did not act on are still fully recovered.
 - Claim-side, 89.3% of the 66k claims correspond to instructions present in the
   prompt (69.4% executed, 16.1% refused-but-mentioned, 3.7% invisible in the
   response), against 3.1% pure behaviour description and 7.6% fabrication.
 
-The first three bullets come from the **calibrated** FOLLOWED judge
+The first three bullets come from the calibrated FOLLOWED judge
 (`prism_eval/scoring/behavior_judge.py`, judge-vs-human κ = 0.734 against a
 human ceiling of 0.786 — see [../DATA_CARD.md](../DATA_CARD.md)). The
 claim-side split comes from `prism_eval/scoring/claim_provenance.py`, which has
 no gold set of its own and should be read as indicative.
 
 Neither judge is part of the default scoring path, and no Table 1 number depends
-on them — they are applied over the saved per-row scores after an evaluation.
+on them. They are applied to saved per-record outputs after evaluation.
 
 ## Ablations
 

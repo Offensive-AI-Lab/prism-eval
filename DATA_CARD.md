@@ -23,7 +23,7 @@ AP and HO carry the adversarial signal; BC and BN are the calibration arms that
 make false-positive and hallucination rates meaningful. Dropping BN would leave
 no way to tell a detector from a model that flags everything.
 
-### ⚠️ BN is non-commercial
+### BN is non-commercial
 
 The 250 **BN** records derive from Stanford Alpaca, which is licensed
 **CC BY-NC 4.0** — non-commercial use only. That restriction travels with those
@@ -40,7 +40,7 @@ python scripts/build_suite.py --settings BN --count 250   # edit fetch_bn() firs
 Note that this changes the suite, so your numbers will no longer be comparable
 to the published ones.
 
-### ⚠️ BC is unfiltered third-party content
+### BC contains unfiltered third-party content
 
 **BC** prompts are reproduced **verbatim** from `fka/prompts.chat`, a
 community-contributed collection of role/persona system prompts (CC0). They
@@ -93,12 +93,9 @@ HO.
 
 ## Judge calibration data
 
-`data/calibration/` is a contribution in its own right: an LLM judge is only
-worth trusting if someone checked it against humans, and these are those checks,
-published so they can be audited rather than taken on faith.
+`data/calibration/` contains the human labels used to validate the LLM judges.
 
-**There are three judges, calibrated separately — do not conflate them.**
-Human labels for all three ship here.
+The three judges have separate calibration sets:
 
 1. **The scoring judge** produces the headline coverage and hallucination
    numbers. Calibrated against a **reconciled gold set**; this is what the paper
@@ -234,11 +231,11 @@ the labels are ours, the underlying prompts are not. The coverage set is built
 on prompts from `ultrachat` (279), `if_multi_constraints` (148) and `if_eval`
 (23) — again, our labels, their prompts.
 
-## XPIA XPIA corpus (agent indirect prompt injection)
+## XPIA corpus (indirect prompt injection)
 
-A second, harder domain: **indirect** prompt injection against tool-using
-agents, where the attack arrives inside a tool result, email or retrieved
-document rather than in the user's message.
+This corpus covers indirect prompt injection against tool-using agents. The
+attack appears in a tool result, email, or retrieved document rather than in the
+user's message.
 
 `data/xpia_corpus.parquet` — 25,002 tagged rows (24,802 attack, 200
 benign), drawn from the three agent-injection benchmarks the eval actually
@@ -254,27 +251,29 @@ Each row carries the injected content plus a tagging layer added here:
 `category`, `attacker_goal`, `delivery_technique`, `evasion_technique`,
 `injection_position`, `tool_output_type`, `scope`, and a `taxonomy_rationale`.
 
-**Build the eval suite from it:**
+Build an evaluation suite from the corpus with:
 
 ```bash
 python scripts/fetch_xpia_evals.py --smoke 20 -o data/eval_suite_xpia_smoke.json
-python scripts/fetch_xpia_evals.py -o data/eval_suite_xpia.json      # the full build
+python scripts/fetch_xpia_evals.py --count 13950 --benign-count 200 \
+  -o data/eval_suite_xpia.json
 ```
 
-The builder reconstructs a system/user/tool conversation per row and derives
+`--count` is a per-source attack-row limit; 13,950 selects every available row
+from all three sources. The builder reconstructs a system/user/tool conversation per row and derives
 ground-truth instruction bullets with an LLM, so it needs a judge endpoint.
 The 20-record smoke suite ships (`data/eval_suite_xpia_smoke.json`);
 the full build does not — it is regenerable and large.
 
-**Licensing.** The tagging is ours; the underlying prompts are not. BIPIA,
-LLMail-Inject and InjecAgent each carry their own terms — check them before
+The added tags are licensed with this project; the underlying prompts retain
+their original licenses. BIPIA, LLMail-Inject, and InjecAgent each carry their own terms — check them before
 redistributing derivatives. This corpus is a filtered subset: the original
 internal corpus spanned 16 datasets, and the other 13 (including
 `wildjailbreak`, `advbench` and `harmbench`, which carry more restrictive
 terms and are never read by this eval) were removed rather than published.
 
-**Content warning.** These are adversarial injection payloads by construction —
-exfiltration attempts, instruction overrides, social-engineering lures.
+The corpus contains adversarial payloads, including exfiltration attempts,
+instruction overrides, and social-engineering content.
 
 ## Intended use and limits
 
@@ -286,7 +285,9 @@ monitoring methods.
 
 Known limits:
 
-- **Single-turn only.** No multi-turn persistence or instruction decay.
+- **Main suite is single-turn.** The 1,000-record AP/HO/BC/BN suite does not
+  measure multi-turn persistence or instruction decay. XPIA uses structured
+  multi-message prompts but evaluates one model response per record.
 - **English only.** A handful of BC prompts are in other languages because the
   source collection is multilingual, but coverage is incidental, not designed.
 - **Synthetic adversarial data.** AP and HO scenarios are LLM-authored and

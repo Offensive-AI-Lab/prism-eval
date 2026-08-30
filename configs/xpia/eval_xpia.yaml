@@ -1,11 +1,12 @@
-# Full xpia XPIA suite. Build it first — the corpus ships, the built suite
+# Full XPIA suite. Build it first; the corpus ships, but the built suite
 # does not (it is large and regenerable):
 #
-#   python scripts/fetch_xpia_evals.py -o data/eval_suite_xpia.json
+#   python scripts/fetch_xpia_evals.py --count 13950 --benign-count 200 \
+#     -o data/eval_suite_xpia.json
 #
 # For a quick check use configs/xpia/eval_xpia_smoke.yaml, whose
 # 20-record suite is committed.
-# XPIA XPIA eval suite — bipia / llmail / injecagent (indirect prompt injection).
+# XPIA evaluation suite: BIPIA, LLMail, and InjecAgent.
 # Reconstructed system/user/tool conversations rendered through the Qwen chat
 # template; gemma4 ground-truth extraction + judge; adversarial identifier finds
 # the injected bullet via the setting="AP" rule. New leaderboard → judge-override
