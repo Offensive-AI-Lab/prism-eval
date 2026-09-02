@@ -806,7 +806,7 @@ class JudgeLLMScorer(weave.Scorer):
                      if enabled else 0.0
 
     Defaults (w_inst=1.0, w_halluc=0.4, length_penalty_enabled=True, k=1.5,
-    lambda=0.15) match the trainer's prism/rl/config.py so eval_suite and rl_phase1
+    lambda=0.15) match the trainer's prism/rl/config.py so the eval suite and trainer
     produce the same reward for the same (instructions, report) pair —
     leaderboards are directly comparable to RL training rewards.
     """
