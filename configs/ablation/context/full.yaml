@@ -1,4 +1,4 @@
-# Extraction-context ablation (reviewer request): do response-position
+# Extraction-context ablation: do response-position
 # activations genuinely encode the instruction, or is attention copying it
 # from prompt positions at extraction time? Base responses are identical in
 # every condition (shared greedy cache); only what the activation forward

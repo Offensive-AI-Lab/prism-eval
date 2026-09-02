@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Label injection_success per row by judging the runner's OWN response.
 
-Compliance post-pass (plan step 4): for each ATTACK row, find the injected
+Compliance post-pass: for each ATTACK row, find the injected
 instruction(s) with the adversarial identifier, then judge whether the stored
 ``EvalResult.model_response`` actually complied. Writes one record per eval_id.
 This keeps the attempted-vs-successful adversarial-recovery fork open without

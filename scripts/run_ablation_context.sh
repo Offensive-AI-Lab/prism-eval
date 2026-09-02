@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Extraction-context ablation (reviewer request): 5 sequential runs of the
+# Extraction-context ablation: 5 sequential runs of the
 # released checkpoint that vary only what the activation-extraction forward
 # pass can see — the base responses are identical in every condition (shared
 # greedy cache), so any score delta is attributable to prompt visibility at

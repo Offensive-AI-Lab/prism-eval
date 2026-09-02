@@ -27,8 +27,7 @@ evaluation already computed, and needs no judge at all.
 
 Labels are cached next to the output so a re-run doesn't pay for them twice.
 
-The aggregation functions below are ported unchanged from the internal
-`reports/xpia/analyze.py`, so the numbers match the published run.
+The aggregation functions below reproduce the published numbers.
 """
 
 from __future__ import annotations
@@ -444,9 +443,8 @@ def provenance_agg(rows: list[dict]) -> dict:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Input layer. The internal pipeline read judge traces out of Weave; this reads
-# the rows.jsonl that `evaluate --offline` already writes, joined against the
-# suite for the prompt and the attack taxonomy.
+# Input layer: reads the rows.jsonl that `evaluate --offline` writes, joined
+# against the suite for the prompt and the attack taxonomy.
 # ─────────────────────────────────────────────────────────────────────────────
 
 TAXONOMY_FIELDS = ("difficulty", "attacker_goal", "injection_position",
@@ -518,7 +516,7 @@ def load_rows(rows_path: Path, suite: dict[str, dict]) -> list[dict]:
 
 
 def source_of(eval_id: str) -> str:
-    """XPIA-bipia-17711 -> bipia. Matches the internal pipeline's derivation."""
+    """XPIA-bipia-17711 -> bipia."""
     parts = eval_id.split("-")
     return parts[1] if len(parts) > 2 and parts[0] == "XPIA" else "other"
 

@@ -1,4 +1,4 @@
-# Activation-window CHUNK ablation (reviewer request, round 3: deep chunks): tile the
+# Activation-window CHUNK ablation: tile the
 # full response in consecutive 128-token chunks (chunk0 = tokens 0-127,
 # chunk1 = 128-255, ...) and eval each chunk separately. Records whose
 # response ends before the chunk get an EMPTY report; per-chunk support

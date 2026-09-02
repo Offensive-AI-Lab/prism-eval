@@ -1,4 +1,4 @@
-# Activation-window ablation (reviewer request): where in the base response
+# Activation-window ablation: where in the base response
 # do we take activations from, and how many tokens do we need?
 # All 24 window conditions share evaluation_name=prism_window_ablation and land
 # on prism_window_ablation_leaderboard. Window/generation params are env-var overrides
