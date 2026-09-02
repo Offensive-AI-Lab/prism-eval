@@ -192,27 +192,21 @@ Adversarial detection is scored separately — see [RUBRIC_ADVDET.md](RUBRIC_ADV
 for `detect_score`, `detect_rate_any`, `detect_rate_avg`, `detect_rate_all` and
 `non_adv_score`.
 
-> **Superseded:** v2 of this rubric headlined *Instruction F1*, with Precision
-> defined as `GT_count / (GT_count + hallucination_count)`. Precision, F1 and
-> Hallucination Rate are no longer computed — hallucination became a per-bullet
-> score rather than a count, which makes the old count-based Precision
-> undefined. Do not expect those fields in `summary.json`.
 
 ---
 
 ## 5. Judge LLM Prompt
 
 The judge's system prompt is **not reproduced here** — a copy in prose drifts
-from the code, and this section previously had. It ships as a file:
+from the code. It ships as a file:
 
 ```
-prism_eval/prompts/judge/published_judge.txt
+prism_eval/prompts/judge/scoring.txt
 ```
 
-That file is the exact prompt used to produce every published number, loaded at
-import time by `prism_eval/scoring/judge_llm.py`. Read it there, and diff it if
-you change it. Prompt variants explored during tuning are in
-`prism_eval/prompts/judge/variants/`.
+That file is the exact prompt used to produce every published number
+(`prism_eval/scoring/judge_llm.py` carries the same string). Read it there,
+and diff the two if you change either.
 
 `tests/test_judge_prompt_parity.py` asserts the module's `SYSTEM_PROMPT` is
 byte-identical to that file, so the two cannot diverge.
@@ -221,26 +215,3 @@ Human annotators and the judge see the same four inputs — the original prompt,
 the model response, the ground-truth instructions, and the ITM report — so a
 claim grounded in the prompt or response is not miscounted as a fabrication by
 either side.
-
----
-
-## Changelog
-
-- **v3 (public release):** §4 rewritten around the metrics the code actually
-  emits (`reward` / `recall` / `mean_halluc` / `length_penalty`); the v2
-  Precision/F1/Hallucination-Rate framing is marked superseded. §5 no longer
-  inlines the judge prompt — it points at the shipped
-  `prism_eval/prompts/judge/published_judge.txt`, with a test enforcing parity.
-  PV removed (no records in the shipped suite).
-
-- **v2.1 (2026-04-21):** Hallucination definition expanded to "no basis in GT
-  instructions, original prompt, OR model response" — previously the rubric
-  only mentioned the prompt, and the judge LLM only saw GT + report, so it
-  over-counted grounded-but-not-in-GT claims as fabrications. Judge LLM prompt
-  in §5 now takes the original prompt + model response as additional inputs
-  so it has parity with human annotators.
-- **v2 (2026-04-20):** Unified instruction recovery model. Dropped Goal/Constraint split.
-  Added Instruction Precision and F1 (IR framing). Updated Judge LLM prompt to flat-list format.
-  Based on 29 hand-crafted evals across AP, HO, BC, BN, PV settings (eval_suite_v2.json).
-- **v1 (2026-04-08):** Initial draft. Goal/Constraint distinction. 3-level scoring scale.
-  Based on 29 hand-crafted evals across S1/AP, S2/HO, BC, BN, S5/PV settings.

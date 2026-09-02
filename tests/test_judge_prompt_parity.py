@@ -106,8 +106,8 @@ def test_module_prompt_is_the_shipped_file():
 
     prompt_dir = Path(prism_eval.__file__).parent / "prompts" / "judge"
     for mod, fname in (
-        (judge_llm, "published_judge.txt"),
-        (adversarial_identifier, "published_advdet.txt"),
+        (judge_llm, "scoring.txt"),
+        (adversarial_identifier, "adversarial_identifier.txt"),
     ):
         assert mod.SYSTEM_PROMPT == (prompt_dir / fname).read_text(), (
             f"{mod.__name__}.SYSTEM_PROMPT has drifted from {fname}"
@@ -121,7 +121,7 @@ def test_rubric_does_not_inline_a_second_copy_of_the_prompt():
     rubric = (Path(__file__).parent.parent / "RUBRIC.md").read_text()
     assert "You are an evaluation judge" not in rubric, (
         "RUBRIC.md inlines a judge prompt again — it will drift from the code. "
-        "Point at prism_eval/prompts/judge/published_judge.txt instead."
+        "Point at prism_eval/prompts/judge/scoring.txt instead."
     )
 
 
