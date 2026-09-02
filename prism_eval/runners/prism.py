@@ -353,11 +353,8 @@ class PrismRunner:
         base_model = self._model.base_model.model
         self._act_store, self._hook_handle = register_hook(base_model, hook_layer)
 
-        # Encoder (optional — depends on checkpoint config)
-
-        # Projection (optional). The arch is read from the checkpoint config so
-        # this same load path supports both the linear baseline and the
-        # bottleneck_mlp variant (AURA Variant A).
+        # Projection (optional). The arch is read from the checkpoint config;
+        # every released checkpoint uses the linear projection.
         use_projection = self._cfg.get("_use_projection", True)
         proj_state = ckpt.get("projection_state")
         if use_projection and proj_state is not None:

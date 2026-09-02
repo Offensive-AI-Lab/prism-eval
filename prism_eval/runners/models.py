@@ -2,9 +2,8 @@
 
 Components:
   1. ActivationProjection — Linear(D→D), projects activations into the decoder's embedding space
-  2. BottleneckMLPProjection — SwiGLU bottleneck MLP with residual (AURA Variant A)
-  3. build_projection — factory for arch="linear" | "bottleneck_mlp"
-  4. Target-model hook + EarlyExit — captures activations at a specific layer
+  2. build_projection — factory (released checkpoints use arch="linear")
+  3. Target-model hook + EarlyExit — captures activations at a specific layer
 
 Adapted from the standalone training/eval code for use within the prism-eval runner.
 """
