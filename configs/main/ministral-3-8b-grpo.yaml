@@ -1,10 +1,5 @@
 # Target-model generalisation row: the same PRISM method, GRPO-tuned
-# FINAL checkpoint. Supersedes eval_grpo_ministral3_1000.yaml, whose row used
-# best_step200 (≈ the SFT model — at eval time GRPO val had not yet re-crossed
-# its start). The completed 20k run's best is step 15600 (val 0.8732).
-#
-# Checkpoint pinned to the immutable step file, not the best.pt symlink.
-# 
+# released checkpoint for Ministral-3-8B.
 experiment:
   name: ministral-3-8b-grpo
   notes: "PRISM trained against Ministral-3-8B-Instruct, hook layer 17."

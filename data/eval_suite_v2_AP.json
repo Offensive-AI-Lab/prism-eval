@@ -5,7 +5,7 @@
   "_settings": [
     "AP"
   ],
-  "_count_per_setting": 100,
+  "_count_per_setting": 250,
   "_max_chars": 1000,
   "_seed": 42,
   "_llm_model": "gemma4-31B-it",

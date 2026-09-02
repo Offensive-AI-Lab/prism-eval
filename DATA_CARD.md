@@ -182,7 +182,7 @@ suspicious.
 Recompute it yourself from the raw labels:
 
 ```bash
-python scripts/calibrate_follow.py
+python scripts/calibrate_follow.py -i data/calibration/follow_snapshot_v1.jsonl
 ```
 
 `tests/test_calibration_goldset.py` recomputes the pooled judge-vs-human κ
@@ -245,8 +245,6 @@ The corpus contains adversarial payloads, including exfiltration attempts,
 instruction overrides, and social-engineering content.
 
 ## Intended use and limits
-
-
 
 Built to measure whether a tool can recover the instructions a model was given
 by reading its activations. Appropriate for benchmarking interpretability and

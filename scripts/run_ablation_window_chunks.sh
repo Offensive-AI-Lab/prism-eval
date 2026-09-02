@@ -26,7 +26,7 @@ mkdir -p results/window_ablation
 run_one() {  # $1=config basename (no .yaml)   remaining args: NAME=VALUE env overrides
   local name="$1"; shift
   echo "=== [$(date '+%F %T')] start $name (env: $*)"
-  env "$@" .venv/bin/python -m prism_eval.cli evaluate --offline \
+  env "$@" uv run python -m prism_eval.cli evaluate --offline \
       --config "configs/ablation/window/${name}.yaml" \
       > "results/window_ablation/${name}.log" 2>&1 \
       && echo "=== [$(date '+%F %T')] done  $name" \

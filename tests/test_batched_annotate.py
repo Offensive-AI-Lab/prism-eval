@@ -148,10 +148,12 @@ def fresh_caches(monkeypatch):
         weave_eval._runner_locks.clear()
 
 
-# Init weave once with a local mode so @weave.op-decorated functions don't
-# try to reach an actual W&B project during these tests.
+# Disable Weave entirely so @weave.op-decorated functions never reach a
+# remote W&B project during these tests.
 @pytest.fixture(scope="module", autouse=True)
 def _local_weave():
+    import os
+    os.environ["WEAVE_DISABLED"] = "true"
     weave.init("disable", autopatch_settings={"openai": {"enabled": False}})
     yield
 

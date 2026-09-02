@@ -15,7 +15,7 @@
 experiment:
   name: xpia
   notes: "Indirect prompt injection (XPIA) suite: bipia+llmail+injecagent reconstructed into tool-slot conversations, prism runner."
-  tags: [xpia, xpia, indirect_injection, AP]
+  tags: [xpia, indirect_injection, AP]
   weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
 
 suite:

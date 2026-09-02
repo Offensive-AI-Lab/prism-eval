@@ -247,6 +247,70 @@ def _exact_agreement_share(rows: list[dict]) -> float:
 # ─── Reporting ───────────────────────────────────────────────────────────────
 
 
+def _is_gold_schema(rows: list[dict]) -> bool:
+    return bool(rows) and "gold_indices" in rows[0]
+
+
+def calibrate_gold(rows: list[dict]) -> dict:
+    """Reconciled-gold snapshot (advdet_gold_v1.jsonl): identifier vs gold.
+
+    Gold rows carry one reconciled ``gold_indices`` set per record (no
+    per-annotator rows), so there is no IAA to compute — the report covers
+    the identifier against gold only.
+    """
+    def _stats(srows: list[dict]) -> dict:
+        jacc, f1s = [], []
+        exact = 0
+        for r in srows:
+            idf = set(r.get("judge_indices") or [])
+            gold = set(r.get("gold_indices") or [])
+            jacc.append(_set_jaccard(idf, gold))
+            _, _, f1 = _set_f1(idf, gold)
+            f1s.append(f1)
+            exact += int(idf == gold)
+        return {
+            "n": len(srows),
+            "exact_match": exact,
+            "exact_match_share": exact / len(srows) if srows else 0.0,
+            "mean_jaccard": _mean(jacc),
+            "mean_f1": _mean(f1s),
+        }
+
+    by_stratum = {label: _stats(srows) for label, srows in _group_field(rows, "stratum_label").items()}
+    by_setting = {s: _stats(srows) for s, srows in _group_field(rows, "setting").items()}
+    worst = [
+        {"eval_id": r["eval_id"], "setting": r.get("setting"),
+         "stratum": r.get("stratum_label"),
+         "judge_indices": r.get("judge_indices"), "gold_indices": r.get("gold_indices")}
+        for r in rows if set(r.get("judge_indices") or []) != set(r.get("gold_indices") or [])
+    ]
+    return {
+        "schema": "reconciled_gold",
+        "n_records": len(rows),
+        "identifier_vs_gold": _stats(rows),
+        "by_stratum": by_stratum,
+        "by_setting": by_setting,
+        "disagreements": worst,
+    }
+
+
+def _group_field(rows: list[dict], field: str) -> dict[str, list[dict]]:
+    out: dict[str, list[dict]] = defaultdict(list)
+    for r in rows:
+        out[r.get(field) or "_unknown"].append(r)
+    return dict(out)
+
+
+def _print_gold_summary(report: dict) -> None:
+    s = report["identifier_vs_gold"]
+    print(f"\nRecords: {report['n_records']} (reconciled gold)", file=sys.stderr)
+    print(f"Identifier matches gold exactly on {s['exact_match']}/{s['n']} "
+          f"({s['exact_match_share']:.3f})", file=sys.stderr)
+    print(f"mean Jaccard {s['mean_jaccard']:.3f} | mean F1 {s['mean_f1']:.3f}", file=sys.stderr)
+    for r in report["disagreements"]:
+        print(f"  disagreement: {r['eval_id']} judge={r['judge_indices']} gold={r['gold_indices']}", file=sys.stderr)
+
+
 def calibrate(rows: list[dict]) -> dict:
     rows_by_call = _group_by_call(rows)
 
@@ -395,7 +459,8 @@ def _print_summary(report: dict) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("-i", "--snapshot", type=Path, required=True,
-                        help="JSONL snapshot of human adversarial-detection labels.")
+                        help="JSONL snapshot: per-annotator rows, or the reconciled "
+                             "gold set (data/calibration/advdet_gold_v1.jsonl).")
     parser.add_argument("-o", "--out", type=Path,
                         help="Optional JSON report path.")
     args = parser.parse_args()
@@ -405,8 +470,12 @@ def main() -> int:
         print(f"ERROR: {args.snapshot} is empty.", file=sys.stderr)
         return 1
 
-    report = calibrate(rows)
-    _print_summary(report)
+    if _is_gold_schema(rows):
+        report = calibrate_gold(rows)
+        _print_gold_summary(report)
+    else:
+        report = calibrate(rows)
+        _print_summary(report)
 
     if args.out:
         args.out.parent.mkdir(parents=True, exist_ok=True)

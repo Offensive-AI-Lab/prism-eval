@@ -6,9 +6,6 @@ Commands:
               skip Weave and write results to local JSON.
     run       Lower-level: run evals through a runner → EvalResult JSONL
     score     Lower-level: score a run JSONL → ScoredResult JSONL
-    pull      Pull human annotations + judge scores into a local snapshot
-    calibrate Offline: judge-vs-human and human-vs-human agreement from a
-              snapshot (Cohen's kappa, Gwet's AC1, Spearman)
     analyze   Per-eval metrics and scorer comparison from a scored JSONL
 """
 
@@ -33,17 +30,9 @@ def cli():
     pass
 
 
-
-
-
-
-
-
-
-
 @cli.command()
 @click.option("--config", "config_path", type=click.Path(exists=True), required=True,
-              help="Experiment YAML config (see configs/main/grpo.yaml)")
+              help="Experiment YAML config (see configs/main/qwen3.5-9b-grpo.yaml)")
 @click.option("--offline", is_flag=True,
               help="Run without Weave: no W&B account needed. Writes "
                    "results/<experiment>/{rows.jsonl,summary.json} instead of "
@@ -67,7 +56,6 @@ def evaluate(config_path, offline, results_dir, no_publish_leaderboard):
     so different runners are directly comparable.
 
     Phases:
-      0. generate (if `generate:` in config) — writes eval suite JSON
       1. annotate pre-pass (if annotation.emit_trace) — `itm_annotate`
          root traces per row, caching predict outputs
       2. evaluate — runs the Evaluation against the configured ITMModel
@@ -449,24 +437,6 @@ def score(suite_path, results, bertscore, judge_llm, output):
             n_scored += 1
 
     click.echo(f"Scored {n_scored} evals → {output_path}")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 @cli.command()

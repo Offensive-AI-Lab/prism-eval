@@ -20,18 +20,6 @@ import torch.nn.functional as F
 logger = logging.getLogger(__name__)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Encoder (loaded from pretrain checkpoint, frozen)
-# ─────────────────────────────────────────────────────────────────────────────
-
-
-def _strip_prefix(state: dict, prefix: str) -> dict:
-    return {
-        k[len(prefix):] if k.startswith(prefix) else k: v
-        for k, v in state.items()
-    }
-
-
 class ActivationProjection(nn.Module):
     """Linear projection from encoder output / raw activations → decoder embedding space."""
 
@@ -45,55 +33,12 @@ class ActivationProjection(nn.Module):
         return self.proj(x)
 
 
-class _RMSNorm(nn.Module):
-    """RMSNorm — Qwen/Llama-style. Avoids a torch-version dependency on nn.RMSNorm."""
-
-    def __init__(self, dim: int, eps: float = 1e-6):
-        super().__init__()
-        self.eps = eps
-        self.weight = nn.Parameter(torch.ones(dim))
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        dtype = x.dtype
-        x32 = x.float()
-        rms = x32.pow(2).mean(dim=-1, keepdim=True).add(self.eps).rsqrt()
-        return (x32 * rms).to(dtype) * self.weight
-
-
-class BottleneckMLPProjection(nn.Module):
-    """Variant A from AURA-new-experiments §2: bottleneck MLP with residual.
-
-        x → RMSNorm → SwiGLU(d → b → d) + residual
-
-    SwiGLU = down_proj( silu(gate_proj(x)) * up_proj(x) ).
-    `down_proj` is zero-initialised so the module starts at identity.
-    """
-
-    def __init__(self, dim: int = 4096, bottleneck_dim: int = 1024):
-        super().__init__()
-        self.norm = _RMSNorm(dim)
-        self.gate_proj = nn.Linear(dim, bottleneck_dim, bias=False)
-        self.up_proj = nn.Linear(dim, bottleneck_dim, bias=False)
-        self.down_proj = nn.Linear(bottleneck_dim, dim, bias=False)
-        nn.init.xavier_uniform_(self.gate_proj.weight)
-        nn.init.xavier_uniform_(self.up_proj.weight)
-        nn.init.zeros_(self.down_proj.weight)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        h = self.norm(x)
-        h = self.down_proj(F.silu(self.gate_proj(h)) * self.up_proj(h))
-        return x + h
-
-
 def build_projection(arch: str, dim: int, bottleneck_dim: int = 1024) -> nn.Module:
-    """Factory mirroring prism.pretrain_infoNCE.model.build_projection."""
+    """Factory for the checkpoint's projection module (released: linear)."""
     if arch == "linear":
         return ActivationProjection(dim=dim)
-    if arch == "bottleneck_mlp":
-        return BottleneckMLPProjection(dim=dim, bottleneck_dim=bottleneck_dim)
     raise NotImplementedError(
-        f"projection_arch={arch!r} not implemented. "
-        f"Supported: 'linear', 'bottleneck_mlp'."
+        f"projection_arch={arch!r} not implemented. Supported: 'linear'."
     )
 
 

@@ -70,8 +70,8 @@ runner:
   checkpoint: ${PRISM_EVAL_CHECKPOINT_DIR}/prism-qwen3.5-9b-grpo.pt
                                     # REQUIRED (except text_only_baseline).
                                     # Keep the ${VAR} form: it is expanded when
-                                    # the file is opened, so the value recorded
-                                    # on the leaderboard is identical on every
+                                    # the runner resolves the checkpoint, so the
+                                    # recorded value is identical on every
                                     # machine. Run scripts/download_weights.py
                                     # to populate the directory.
 
@@ -116,6 +116,10 @@ annotation:
   op_name: itm_annotate             # Change to create a separate trace stream.
   batch_size: 16                    # GPU batch size. Tune to fit your card;
                                     # the baselines ship with 32-64.
+  trace_workers: 8                  # Concurrent network-bound calls (trace
+                                    # emission online; judge calls offline).
+  max_batch_tokens: null            # Optional cap on prompt tokens per GPU
+                                    # batch; see docs/REPRODUCING.md.
 
 
 # ── Evaluation / leaderboard ─────────────────────────────────────────────────

@@ -278,7 +278,7 @@ class PrismRunner:
         self._gen_eos_id = None
 
     def setup(self, checkpoint_path: str, device: str = "cuda") -> None:
-        """Load the encoder-decoder checkpoint."""
+        """Load the PRISM checkpoint."""
         from peft import LoraConfig, TaskType, get_peft_model, set_peft_model_state_dict
         from transformers import AutoModelForImageTextToText, AutoProcessor
 

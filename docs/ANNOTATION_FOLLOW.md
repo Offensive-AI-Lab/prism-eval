@@ -2,8 +2,8 @@
 
 Getting humans to validate the **behavior judge's `FOLLOWED` label**
 (`prism_eval/scoring/behavior_judge.py`) — the per-GT binary "did the model
-actually act on this instruction?" that drives follow-gated recall
-. This is the FOLLOWED analogue of the
+actually act on this instruction?" that drives follow-gated recall.
+This is the FOLLOWED analogue of the
 adversarial-identifier calibration (see `RUBRIC_ADVDET.md`); it reuses the
 same Weave-annotation machinery and the same set-based agreement math.
 
@@ -28,7 +28,7 @@ behaved here and is reported alongside Gwet's AC1.
 |---|---|
 | `prism_eval/scoring/behavior_judge.py` | The judge under test — `judge_behavior()` emits aligned `adversarial` + `followed` 0/1 vectors. FOLLOWED rubric lives in its `SYSTEM_PROMPT`. |
 | `prism_eval/weave_eval.py` | `itm_follow_annotate` op — annotation-ready root trace (prompt + response + GT bullets; judge picks hidden in attributes). |
-| `configs/follow_queue_spec_v1.json` | Strata: source (bipia/llmail/injecagent) × attack outcome (adv_followed / adv_refused). 100 records, split ~proportional to family size (bipia 52 / llmail 38 / injecagent 10), 50/50 followed/refused within each. |
+| `configs/follow_queue_spec_v1.json` | Strata: source (bipia/llmail/injecagent) × attack outcome (adv_followed / adv_refused). 100 records targeted, split ~proportional to family size (bipia 52 / llmail 38 / injecagent 10), 50/50 followed/refused within each; 92 calls (184 annotator rows) survived filtering into the shipped snapshot. |
 | `scripts/calibrate_follow.py` | Snapshot → IAA (human↔human) vs judge↔human: Cohen κ, Gwet AC1, Jaccard/P/R/F1, per-source + per-stratum, worst rows. |
 
 Input data from the XPIA run:
@@ -59,7 +59,7 @@ ran against our own Weave project, and the resulting labels ship directly as
 `data/calibration/follow_snapshot_v1.jsonl`. What follows is reproducible from
 that file alone.
 
-### 4. Calibrate
+### Calibrate
 
 ```bash
 python scripts/calibrate_follow.py \
@@ -78,8 +78,8 @@ prompt-iteration signal — tune the FOLLOWED rules in `behavior_judge.py`'s
 - **Judge prompt version**: bumps when the FOLLOWED rules in
   `behavior_judge.py` `SYSTEM_PROMPT` change. If this label ever feeds a
   published leaderboard, follow `CONTRIBUTING.md` "Leaderboard bump policy".
-- **Annotation batch**: `--queue-name follow_calibration_v1` / `_v2` / …
-  The pull script filters by queue name, so multiple batches coexist.
+- **Annotation batch**: queue names (`follow_calibration_v1` / `_v2` / …)
+  keep multiple annotation batches separate.
 
 ## Notes / scope
 

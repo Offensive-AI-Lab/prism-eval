@@ -5,7 +5,7 @@
   "_settings": [
     "BN"
   ],
-  "_count_per_setting": 200,
+  "_count_per_setting": 250,
   "_max_chars": 1000,
   "_seed": 42,
   "_llm_model": "gemma4-31-B-it",

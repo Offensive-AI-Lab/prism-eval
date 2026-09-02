@@ -1,10 +1,5 @@
 # Target-model generalisation row: the same PRISM method, GRPO-tuned
-# FINAL checkpoint. Supersedes eval_grpo_gemma2_1000.yaml, whose row was a
-# mid-run snapshot (step 4200, val 0.8766) taken while the 20k GRPO job was
-# still training. The completed run's best is step 11800 (val 0.8943).
-#
-# Checkpoint pinned to the immutable step file, not the best.pt symlink.
-# 
+# released checkpoint for gemma-2-9b-it.
 experiment:
   name: gemma-2-9b-it-grpo
   notes: "PRISM trained against Gemma-2-9B-it, hook layer 21."

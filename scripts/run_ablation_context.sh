@@ -29,8 +29,8 @@ export PRISM_EVAL_BASE_URL="${PRISM_EVAL_BASE_URL:-http://localhost:8088/v1}"
 export PRISM_EVAL_MODEL="${PRISM_EVAL_MODEL:-gemma4-31B-it}"
 export PRISM_EVAL_API_KEY="${PRISM_EVAL_API_KEY:-EMPTY}"
 
-# Base responses depend only on (base model, messages, 196-token cap) — the
-# window-ablation cache already holds them, so no condition regenerates.
+# Base responses are cached by (base model, messages, generation cap): the
+# five context conditions share one 196-cap cache, generated on first use.
 export PRISM_EVAL_BASE_RESPONSE_CACHE="${PRISM_EVAL_BASE_RESPONSE_CACHE:-results/window_ablation/base_responses.jsonl}"
 
 mkdir -p results/act_context_ablation
@@ -38,7 +38,7 @@ mkdir -p results/act_context_ablation
 SWAP_PAIRS=results/act_context_ablation/swap_pairs.json
 if [ ! -f "$SWAP_PAIRS" ]; then
   echo "=== [$(date '+%F %T')] generating swap pairs"
-  .venv/bin/python scripts/make_act_swap_pairs.py \
+  uv run python scripts/make_act_swap_pairs.py \
       --suite data/eval_suite_v2_final.json \
       --pairs-out "$SWAP_PAIRS" \
       --donor-suite-out results/act_context_ablation/donor_suite.json \
@@ -48,7 +48,7 @@ fi
 run_one() {  # $1=config basename (no .yaml)   remaining args: NAME=VALUE env overrides
   local name="$1"; shift
   echo "=== [$(date '+%F %T')] start $name (env: $*)"
-  env "$@" .venv/bin/python -m prism_eval.cli evaluate --offline \
+  env "$@" uv run python -m prism_eval.cli evaluate --offline \
       --config "configs/ablation/context/${name}.yaml" \
       > "results/act_context_ablation/${name}.log" 2>&1 \
       && echo "=== [$(date '+%F %T')] done  $name" \

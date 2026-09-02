@@ -4,8 +4,9 @@ Reconstructs the exact cache keys the runner would compute (same messages
 construction as _run_batch_single_turn) and writes {key, response} JSONL
 entries for every itm_annotate root trace in the given time window.
 
-Usage:
+Usage (requires a populated Weave project from a previous online run):
   python scripts/prefill_response_cache.py \
+      --project <entity>/<project> \
       --checkpoint <ckpt.pt> --max-new-tokens 2048 \
       --since "2026-07-10T04:01:00Z" \
       --cache results/window_ablation/base_responses.jsonl
