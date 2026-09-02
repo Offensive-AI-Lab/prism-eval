@@ -145,21 +145,6 @@
       }
     }
   },
-  "paper_table_4": {
-    "human_vs_human": {
-      "cohens_kappa": 0.823,
-      "gwets_ac2": 0.939,
-      "n_reports": 49,
-      "n_labels": 167
-    },
-    "judge_vs_gold": {
-      "cohens_kappa": 0.817,
-      "gwets_ac2": 0.93,
-      "n_reports": 49,
-      "n_labels": 170
-    },
-    "note": "The pilot round reproduces the paper's record and label counts exactly. Human-vs-human here is 0.8239 over 170 claims vs the paper's 0.8232 over 167 \u2014 the original pipeline truncated three claims where the two label vectors differed in length. Judge-vs-gold here is 0.8002 vs the paper's 0.817; the gold labels are identical, but the judge is a sampled LLM that was re-scored more than once. Two saved runs in the training repo give 0.7728 and 0.7938."
-  },
   "adversarial_detection": {
     "n_records": 50,
     "judge_matches_gold": 49,

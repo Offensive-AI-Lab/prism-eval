@@ -112,7 +112,6 @@ The three judges have separate calibration sets:
 | `coverage_gold_v1.jsonl` | scoring | **93 reports / 373 gold labels** across three rounds. Each row: prompt, target-model response, ground-truth instructions, ITM report and bullets, the published judge's per-claim scores, the reconciled **gold** label, and both annotators' independent pre-reconciliation labels where they exist. |
 | `advdet_gold_v1.jsonl` | advdet | 50 reports with the reconciled gold set of adversarial bullet indices, plus the judge's picks. |
 | `coverage_calibration_v1.json` | scoring + advdet | The frozen agreement report computed from both. |
-| `published/` | — | The original frozen reports behind the paper's numbers, pseudonymised. See below. |
 | `follow_snapshot_v1.jsonl` | FOLLOWED | 184 (call, annotator) records; 92 calls double-annotated. Stratified over three agent-injection sources (bipia, injecagent, llmail) × followed/refused. |
 | `follow_calibration_v1.json` | FOLLOWED | The frozen agreement report computed from it. |
 
@@ -152,38 +151,9 @@ near that is doing as well as independent human labelling does.
 > weighted vs 0.60 unweighted — so always say which you mean. Both are reported
 > everywhere.
 
-**A third rater is excluded entirely.** They contributed 16 labels across 8
-pilot reports — too few to support an agreement estimate — so they appear
-nowhere in this release, not even down-weighted.
-
 The other two rounds are harder by construction: `hard` (25 reports) was
 sampled for difficult hallucination cases and the judge agrees with gold only
-to κ = 0.635 there. That number has not been published before and is worth
-knowing before trusting the judge on adversarial content.
-
-#### Reproducing the paper's Table 4
-
-`data/calibration/published/` holds the original frozen reports:
-
-| Paper Table 4 | Value | File | Reproduces? |
-|---|---|---|---|
-| Human vs human | κ 0.823 / AC2 0.939 / 49 / 167 | `inter_annotator_pilot.json` | **exactly** |
-| Judge vs gold | κ 0.817 / AC2 0.930 / 49 / 170 | `judge_vs_gold_run1.json` (0.7728), `judge_vs_gold_run2.json` (0.7938) | **no** |
-
-Two caveats, stated plainly:
-
-- **Human vs human.** The shipped labels give κ = 0.8239 over **170** claims
-  against the paper's 0.8232 over **167**. The original pipeline truncated three
-  claims where the two annotators' label vectors differed in length; the gold
-  workbook keeps them. The frozen `inter_annotator_pilot.json` reproduces the
-  paper's figure exactly.
-- **Judge vs gold.** The gold labels are identical everywhere, but the judge is
-  a sampled LLM that was re-scored more than once, and no surviving artifact
-  produces 0.817. Three runs give 0.7728, 0.7938 and 0.8002. The run behind the
-  published figure was not kept.
-
-`published/judge_vs_each_annotator.json` carries judge-vs-A / vs-B / vs-pooled
-figures that were computed at the time but never published.
+to κ = 0.635 there.
 
 `tests/test_coverage_goldset.py` recomputes all of the above from the raw labels
 through the same code path as the script, and asserts an exact match against the

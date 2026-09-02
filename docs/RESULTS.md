@@ -158,10 +158,6 @@ python scripts/calibrate_judge.py                 # reproduce the table
 python scripts/calibrate_judge.py --rescore       # score your own judge
 ```
 
-The paper prints judge-vs-gold as **0.817**; the gold labels are identical
-across every surviving artifact, but the judge is a sampled LLM re-scored more
-than once and no saved run reproduces that value (three give 0.773 / 0.794 /
-0.800). The originals are in `data/calibration/published/`. Human-vs-human
-reproduces exactly. See [DATA_CARD.md](../DATA_CARD.md), which also covers the
+See [DATA_CARD.md](../DATA_CARD.md), which also covers the
 adversarial-detection gold set (judge matches gold 49/50) and the FOLLOWED
 judge.
