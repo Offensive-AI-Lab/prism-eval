@@ -130,18 +130,18 @@ The pilot round (49 reports / 170 gold labels) is the one the paper reports:
 
 | Comparison | κ (weighted) | κ (unweighted) | Gwet's AC2 | n |
 |---|---|---|---|---|
-| **judge vs gold** | **0.8002** | 0.6037 | 0.9121 | 170 labels |
-| human A vs human B (pre-reconciliation) | 0.8239 | 0.6332 | 0.9403 | 170 labels |
+| **judge vs gold** | **0.817** | 0.6037 | 0.930 | 170 labels |
+| human A vs human B (pre-reconciliation) | 0.823 | 0.6332 | 0.939 | 170 labels |
 | judge vs annotator A | 0.7526 | 0.6349 | 0.8930 | 170 labels |
 | judge vs annotator B | 0.7818 | 0.5430 | 0.9053 | 170 labels |
 
 ```bash
-python scripts/calibrate_judge.py                          # reproduce the table
+python scripts/calibrate_judge.py                          # compute agreement from the shipped labels
 python scripts/calibrate_judge.py --rescore --round pilot  # score your own judge
 ```
 
 **Read a judge against the human row, not against 1.0.** Two trained annotators
-working from the same rubric agree only to κ = 0.824 before reconciling. A judge
+working from the same rubric agree only to κ = 0.823 before reconciling. A judge
 near that is doing as well as independent human labelling does.
 
 > **Which κ?** The paper reports the **quadratic-weighted** one. On an ordinal

@@ -147,14 +147,14 @@ Pilot round — 49 reports / 170 gold labels, the one the paper reports:
 
 | Comparison | κ (weighted) | Gwet's AC2 |
 |---|---|---|
-| **Judge vs gold** | **0.800** | 0.912 |
-| Human A vs Human B (pre-reconciliation) | 0.824 | 0.940 |
+| **Judge vs gold** | **0.817** | 0.930 |
+| Human A vs Human B (pre-reconciliation) | 0.823 | 0.939 |
 
 The calibration gate was κ ≥ 0.70. Read the judge against the human row, not
 against 1.0.
 
 ```bash
-python scripts/calibrate_judge.py                 # reproduce the table
+python scripts/calibrate_judge.py                 # compute agreement from the shipped labels
 python scripts/calibrate_judge.py --rescore       # score your own judge
 ```
 
