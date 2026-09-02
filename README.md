@@ -72,7 +72,7 @@ set `WANDB_API_KEY`, and omit `--offline`.
 
 ## Evaluation suite
 
-The canonical suite is `data/eval_suite_v2_final.json`. It contains 250 records
+The canonical suite is `data/eval_suite.json`. It contains 250 records
 from each setting:
 
 | Code | Setting | Evaluation target |
@@ -205,9 +205,9 @@ a model endpoint:
 ```bash
 uv run python scripts/calibrate_judge.py
 uv run python scripts/calibrate_advdet.py \
-  --snapshot data/calibration/advdet_gold_v1.jsonl
+  --snapshot data/calibration/advdet_gold.jsonl
 uv run python scripts/calibrate_follow.py \
-  --snapshot data/calibration/follow_snapshot_v1.jsonl
+  --snapshot data/calibration/follow_snapshot.jsonl
 ```
 
 Use `scripts/calibrate_judge.py --rescore` to score a configured judge against

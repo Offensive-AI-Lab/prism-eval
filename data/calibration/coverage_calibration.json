@@ -15,7 +15,7 @@
     "note": "Pseudonymous by design. A third rater contributed 16 labels across 8 pilot reports and is excluded from this release entirely."
   },
   "provenance": {
-    "source": "reconciled gold labels (coverage_gold_v1.jsonl, advdet_gold_v1.jsonl)",
+    "source": "reconciled gold labels (coverage_gold.jsonl, advdet_gold.jsonl)",
     "requires_weave": false,
     "note": "Every number here recomputes from the shipped JSONL alone. No Weave project, W&B account or network access is involved."
   },

@@ -24,7 +24,7 @@ class LongContextParams(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# v2 schema models
+# Schema models (current spec)
 # ---------------------------------------------------------------------------
 
 
@@ -60,7 +60,7 @@ class ProbeResult(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Core eval record (supports v1 and v2)
+# Core eval record (supports legacy and current)
 # ---------------------------------------------------------------------------
 
 
@@ -83,12 +83,12 @@ class EvalRecord(BaseModel):
     # Rendered verbatim through the model's chat template by the runner.
     prompt_messages: list[dict] | None = None
 
-    # --- v2 fields ---
+    # --- current fields ---
     instruction_sources: dict[str, list[str]] | None = None
     probe_points: list[ProbePoint] | None = None
     metadata: EvalMetadata | None = None
 
-    # --- v1 deprecated fields (kept for backward compat / auto-upgrade) ---
+    # --- legacy deprecated fields (kept for backward compat / auto-upgrade) ---
     constraints: list[str] | None = None
     goals: list[str] | None = None
 
@@ -118,7 +118,7 @@ class EvalRecord(BaseModel):
 
         if not has_v2 and not has_v1:
             raise ValueError(
-                "Either instruction_sources (v2) or constraints (v1) must be provided"
+                "Either instruction_sources (current) or constraints (legacy) must be provided"
             )
 
         if has_v2 and "original" not in self.instruction_sources:
@@ -162,30 +162,30 @@ class ClaimScore(BaseModel):
 class ScorerOutput(BaseModel):
     """Output from a single scoring method.
 
-    v2 hallucination spec (current): per-bullet ``hallucination_scores`` —
+    Current hallucination spec: per-bullet ``hallucination_scores`` —
     one score per ITM-REPORT bullet in {0.0, 0.5, 1.0}, where higher = more
     hallucinated. ``mean(hallucination_scores)`` is the canonical halluc
     metric (drives the training reward formula and the leaderboard).
 
-    v1 (deprecated): ``hallucination_count`` (int) — count of fully
+    legacy (deprecated): ``hallucination_count`` (int) — count of fully
     fabricated claims. Kept on the model so legacy snapshots still load,
-    but v2-produced records leave it at 0. New code MUST read
+    but current-produced records leave it at 0. New code MUST read
     ``hallucination_scores``.
     """
 
     scorer: str
     instruction_scores: list[ClaimScore] = []
-    # v2 — per-ITM-bullet hallucination scores (0/0.5/1, higher = worse).
+    # current — per-ITM-bullet hallucination scores (0/0.5/1, higher = worse).
     hallucination_scores: list[float] = []
     # Per-hallucination descriptions from the judge LLM (populated only by
-    # judge_llm; other scorers leave this empty). v2 keeps this for parity
+    # judge_llm; other scorers leave this empty). the current spec keeps this for parity
     # with the optional `details` block the judge can still emit.
     hallucination_details: list[str] = []
 
-    # v1 — deprecated. Auto-zeroed for v2-produced records.
+    # legacy — deprecated. Auto-zeroed for current-produced records.
     hallucination_count: int = 0
 
-    # Deprecated v1 fields — kept so old JSONL results can still be loaded
+    # Deprecated legacy fields — kept so old JSONL results can still be loaded
     constraint_scores: list[ClaimScore] = []
     goal_scores: list[ClaimScore] = []
 

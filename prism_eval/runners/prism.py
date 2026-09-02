@@ -845,7 +845,7 @@ class PrismRunner:
 
         results: list[EvalResult | None] = [None] * len(eval_records)
 
-        # Multi-turn: per-record loop (rare in the v2 single-turn suites we
+        # Multi-turn: per-record loop (rare in the shipped single-turn suites we
         # benchmark, so the cost of this fallback is negligible in practice).
         for i in multi_idx:
             results[i] = self.run_eval(eval_records[i])

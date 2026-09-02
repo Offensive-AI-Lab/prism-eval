@@ -21,7 +21,7 @@ experiment:
   weave_project: null
 
 suite:
-  path: data/eval_suite_v2_final.json
+  path: data/eval_suite.json
   settings: [AP, HO, BC, BN]
   per_setting_limit: {AP: 2, HO: 2, BC: 2, BN: 2}
 

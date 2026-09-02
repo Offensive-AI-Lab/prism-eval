@@ -10,11 +10,11 @@
 experiment:
   name: pos_mid128
   notes: "Window ablation, released checkpoint: PRISM_EVAL_ACT_WINDOW_POS=middle PRISM_EVAL_BASE_GEN_MAX_NEW_TOKENS=768 (full response, middle 128)"
-  tags: [eval_suite_v2, grpo, window_ablation, pos_middle]
+  tags: [eval_suite, grpo, window_ablation, pos_middle]
   weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
 
 suite:
-  path: data/eval_suite_v2_final.json
+  path: data/eval_suite.json
   settings: [AP, HO, BC, BN]
 
 runner:

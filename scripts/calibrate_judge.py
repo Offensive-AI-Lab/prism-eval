@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Measure how well a judge agrees with the human gold labels on instruction coverage.
 
-`data/calibration/coverage_gold_v1.jsonl` holds 93 ITM reports scored claim by
+`data/calibration/coverage_gold.jsonl` holds 93 ITM reports scored claim by
 claim by two annotators who then sat together and reconciled every disagreement
 into a single gold label. Each record also carries the prompt, the target
 model's response, and the scores the published judge gave. That is enough to
@@ -41,8 +41,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 REPO = Path(__file__).resolve().parent.parent
-SNAPSHOT = REPO / "data" / "calibration" / "coverage_gold_v1.jsonl"
-FROZEN = REPO / "data" / "calibration" / "coverage_calibration_v1.json"
+SNAPSHOT = REPO / "data" / "calibration" / "coverage_gold.jsonl"
+FROZEN = REPO / "data" / "calibration" / "coverage_calibration.json"
 
 ROUNDS = ("pilot", "hard", "hard2")
 ANNOTATORS = ("annotator_a", "annotator_b")

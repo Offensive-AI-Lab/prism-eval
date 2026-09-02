@@ -29,13 +29,13 @@ experiment:
 # (merged and deduped by eval_id).
 
 suite:
-  path: data/eval_suite_v2_final.json   # REQUIRED. The canonical 1000-record
+  path: data/eval_suite.json   # REQUIRED. The canonical 1000-record
                                         # suite: AP/HO/BC/BN × 250.
 
   # OR merge several files into one slice:
   # path:
-  #   - data/eval_suite_v2_AP.json
-  #   - data/eval_suite_v2_BN.json
+  #   - data/eval_suite_AP.json
+  #   - data/eval_suite_BN.json
 
   settings: [AP, HO, BC, BN]  # Filter to setting codes. null = all.
                               # AP = adversarial prompt, HO = hidden objective,
@@ -129,7 +129,7 @@ annotation:
 # changes, which silently moves the row to a different board.
 
 evaluation:
-  evaluation_name: prism_eval_suite_v2_1000
+  evaluation_name: prism_eval_suite_1000
                                     # null defaults to "{experiment.name}_v1".
   publish_leaderboard: true         # Ignored when running --offline.
   leaderboard_name: prism_main_leaderboard

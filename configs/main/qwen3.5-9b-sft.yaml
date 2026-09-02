@@ -8,11 +8,11 @@
 experiment:
   name: qwen3.5-9b-sft
   notes: "PRISM trained against Qwen3.5-9B, hook layer 16. SFT only — the initialisation GRPO starts from."
-  tags: [eval_suite_v2, prism, sft]
+  tags: [eval_suite, prism, sft]
   weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
 
 suite:
-  path: data/eval_suite_v2_final.json
+  path: data/eval_suite.json
   settings: [AP, HO, BC, BN]
 
 runner:
@@ -32,6 +32,6 @@ annotation:
   batch_size: 16
 
 evaluation:
-  evaluation_name: prism_eval_suite_v2_1000
+  evaluation_name: prism_eval_suite_1000
   publish_leaderboard: true
   leaderboard_name: prism_main_leaderboard

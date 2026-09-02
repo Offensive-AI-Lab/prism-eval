@@ -1,7 +1,7 @@
 """Metrics computation and decay analysis.
 
-v2 per-eval metrics: ``instruction_recall``, ``mean_hallucination_score``
-(replaces v1 ``hallucination_rate``, which assumed an int count).
+Per-eval metrics: ``instruction_recall``, ``mean_hallucination_score``
+(replaces legacy ``hallucination_rate``, which assumed an int count).
 Decay analysis: group instructions by distance from end, plot recall vs distance.
 Scorer comparison: agreement across methods.
 """
@@ -18,7 +18,7 @@ def instruction_recall(scorer_output: ScorerOutput) -> float:
     """Mean score across instruction claims."""
     scores = scorer_output.instruction_scores
     if not scores:
-        # Fallback to deprecated v1 fields for old JSONL results
+        # Fallback to deprecated legacy fields for old JSONL results
         v1_scores = scorer_output.constraint_scores + scorer_output.goal_scores
         if not v1_scores:
             return 0.0
@@ -29,7 +29,7 @@ def instruction_recall(scorer_output: ScorerOutput) -> float:
 def mean_hallucination_score(scorer_output: ScorerOutput) -> float:
     """Mean per-ITM-bullet hallucination score in [0, 1]. Only meaningful for judge_llm.
 
-    v1 ``hallucination_rate`` used ``count / (gt_count + count)``, but with v2
+    legacy ``hallucination_rate`` used ``count / (gt_count + count)``, but with current
     per-bullet 0/0.5/1 scores the analogous quantity is just the mean. Empty
     score list ⇒ 0.0 (no hallucination signal available).
     """
@@ -109,7 +109,7 @@ def decay_analysis(
         n_turns = record.generation_params.n_turns
         positions = record.instruction_positions
 
-        # Use instruction_scores (v2), fall back to constraint_scores (v1)
+        # Use instruction_scores (current), fall back to constraint_scores (legacy)
         claim_scores = so.instruction_scores or so.constraint_scores
 
         for i, pos in enumerate(positions):

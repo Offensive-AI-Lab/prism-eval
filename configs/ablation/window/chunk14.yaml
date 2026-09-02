@@ -11,11 +11,11 @@
 experiment:
   name: chunk14
   notes: "Window chunk ablation, released checkpoint: PRISM_EVAL_ACT_WINDOW_POS=chunk14 PRISM_EVAL_BASE_GEN_MAX_NEW_TOKENS=2048 (tokens 1792-1919 of full response)"
-  tags: [eval_suite_v2, grpo, window_ablation, chunk_14]
+  tags: [eval_suite, grpo, window_ablation, chunk_14]
   weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
 
 suite:
-  path: data/eval_suite_v2_final.json
+  path: data/eval_suite.json
   settings: [AP, HO, BC, BN]
 
 runner:

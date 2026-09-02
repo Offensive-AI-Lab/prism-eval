@@ -5,7 +5,7 @@ from pathlib import Path
 from prism_eval.loader import filter_evals, load_suite
 from prism_eval.schema import EvalRecord
 
-CANONICAL_SUITE = Path(__file__).parent.parent / "data" / "eval_suite_v2_final.json"
+CANONICAL_SUITE = Path(__file__).parent.parent / "data" / "eval_suite.json"
 
 
 def _make_record(**overrides) -> EvalRecord:

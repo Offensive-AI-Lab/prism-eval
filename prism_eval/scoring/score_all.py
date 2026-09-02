@@ -11,10 +11,10 @@ from prism_eval.scoring import exact_match, token_f1
 def resolve_instructions(record: EvalRecord, probe: ProbePoint | None = None) -> list[str]:
     """Resolve the instruction list to score against.
 
-    For v2 records with probe_points, resolves source keys from the probe's
+    For current records with probe_points, resolves source keys from the probe's
     expected_instructions against instruction_sources.
 
-    For v1 records (or v2 without probe_points), returns instruction_sources["original"]
+    For legacy records (or current without probe_points), returns instruction_sources["original"]
     (or falls back to constraints for un-migrated records).
     """
     if record.instruction_sources is not None:
@@ -28,7 +28,7 @@ def resolve_instructions(record: EvalRecord, probe: ProbePoint | None = None) ->
         # No probe specified — return all original instructions
         return list(record.instruction_sources.get("original", []))
 
-    # v1 fallback: concatenate constraints + goals
+    # legacy fallback: concatenate constraints + goals
     result: list[str] = []
     if record.constraints:
         result.extend(record.constraints)

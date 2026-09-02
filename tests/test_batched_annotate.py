@@ -15,7 +15,7 @@ Three invariants this file pins down:
 
 3. **Fallback path (step 3)**: For a runner that does NOT expose
    ``run_batch``, the pre-pass loops run_eval per record (acquiring
-   run_lock each time, just like the v1 serial path) and still
+   run_lock each time, just like the legacy serial path) and still
    populates the cache so the trace-recording stage parallelises.
 
 All tests use stub runners — no Qwen, no GPU. The real
@@ -40,7 +40,7 @@ from prism_eval.schema import EvalRecord, EvalResult
 
 
 def _make_record(eval_id: str) -> EvalRecord:
-    """Minimal single-turn EvalRecord shaped like the v2 suites."""
+    """Minimal single-turn EvalRecord shaped like the shipped suites."""
     return EvalRecord(
         eval_id=eval_id,
         setting="AP",

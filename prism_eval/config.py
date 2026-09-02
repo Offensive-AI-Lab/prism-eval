@@ -17,8 +17,8 @@ Example:
       weave_project: null          # null = offline; "<entity>/<project>" to trace
 
     suite:
-      path: data/eval_suite_v1.json
-      settings: [S1, BC, BN]
+      path: data/eval_suite.json
+      settings: [AP, BC, BN]
 
     runner:
       type: prism
@@ -262,7 +262,7 @@ class AnnotationConfig(BaseModel):
             "Batch size for the GPU stage of the annotate pre-pass. The runner's "
             "run_batch(records) is called once per batch; results pre-populate the "
             "predict cache so the per-row itm_annotate trace emission can fan out "
-            "concurrently. Set to 1 to recover the v1 serial behavior. "
+            "concurrently. Set to 1 for fully serial batches. "
             "8 is safe on RTX 6000 Pro (~25 GB on top of the loaded model)."
         ),
     )

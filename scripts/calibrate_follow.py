@@ -2,7 +2,7 @@
 """Calibrate the behavior judge's FOLLOWED label against human annotations.
 
 Reads a JSONL snapshot of human FOLLOWED labels
-(`data/calibration/follow_snapshot_v1.jsonl`) and
+(`data/calibration/follow_snapshot.jsonl`) and
 computes agreement between the judge's per-bullet FOLLOWED label and humans,
 alongside the human-vs-human ceiling.
 

@@ -1,4 +1,4 @@
-"""Tests for prism_eval.metrics (v2 hallucination spec)."""
+"""Tests for prism_eval.metrics (current hallucination spec)."""
 
 from prism_eval.metrics import (
     aggregate_metrics,
@@ -18,7 +18,7 @@ from prism_eval.schema import (
 
 
 def _so(scores: list[float], halluc_scores: list[float] | None = None) -> ScorerOutput:
-    """Build a v2 ScorerOutput with instruction_scores + hallucination_scores."""
+    """Build a current-spec ScorerOutput with instruction_scores + hallucination_scores."""
     return ScorerOutput(
         scorer="test",
         instruction_scores=[ClaimScore(claim=f"i{i}", score=s) for i, s in enumerate(scores)],
@@ -27,7 +27,7 @@ def _so(scores: list[float], halluc_scores: list[float] | None = None) -> Scorer
 
 
 def _so_v1(constraint_scores: list[float], goal_scores: list[float], hall: int = 0) -> ScorerOutput:
-    """Build a v1-style ScorerOutput for backward compat tests."""
+    """Build a legacy-style ScorerOutput for backward compat tests."""
     return ScorerOutput(
         scorer="test",
         constraint_scores=[ClaimScore(claim=f"c{i}", score=s) for i, s in enumerate(constraint_scores)],
@@ -60,7 +60,7 @@ class TestBasicMetrics:
         assert instruction_recall(so) == 0.0
 
     def test_v1_fallback(self):
-        """instruction_recall falls back to v1 fields when instruction_scores is empty."""
+        """instruction_recall falls back to legacy fields when instruction_scores is empty."""
         so = _so_v1([1.0, 0.0], [0.5])
         assert instruction_recall(so) == 0.5  # mean of [1.0, 0.0, 0.5]
 

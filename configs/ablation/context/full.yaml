@@ -17,11 +17,11 @@
 experiment:
   name: full
   notes: "Act-context ablation, released checkpoint: PRISM_EVAL_ACT_CONTEXT=full (baseline row)"
-  tags: [eval_suite_v2, grpo, act_context_ablation, ctx_full]
+  tags: [eval_suite, grpo, act_context_ablation, ctx_full]
   weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
 
 suite:
-  path: data/eval_suite_v2_final.json
+  path: data/eval_suite.json
   settings: [AP, HO, BC, BN]
 
 runner:

@@ -1,6 +1,6 @@
 """Reward-formula equivalence: eval_suite leaderboard ≡ the trainer's GRPO reward.
 
-The whole point of the v2 spec migration is that the eval suite and the trainer are
+The point of the shared spec is that the eval suite and the trainer are
 driven by *the same number*: a JudgeLLMScorer's per-row ``reward`` and an
 training GRPO step's per-candidate ``reward`` should be identical when given
 the same (recall, mean_hallucination_score, n_gt, n_itm) inputs. If anyone
@@ -72,7 +72,7 @@ def _run_scorer(
     """Drive JudgeLLMScorer end-to-end against a stub LLM client.
 
     Returns the per-row score dict the scorer would emit during a Weave
-    Evaluation, with the v2 reward already computed.
+    Evaluation, with the reward already computed.
     """
     # Build an ITM report whose split_report_bullets count matches n_itm so
     # the scorer's length-penalty math sees the right ITM bullet count.

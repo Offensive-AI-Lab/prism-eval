@@ -39,7 +39,7 @@ SWAP_PAIRS=results/act_context_ablation/swap_pairs.json
 if [ ! -f "$SWAP_PAIRS" ]; then
   echo "=== [$(date '+%F %T')] generating swap pairs"
   uv run python scripts/make_act_swap_pairs.py \
-      --suite data/eval_suite_v2_final.json \
+      --suite data/eval_suite.json \
       --pairs-out "$SWAP_PAIRS" \
       --donor-suite-out results/act_context_ablation/donor_suite.json \
       || { echo "swap-pair generation FAILED — aborting"; exit 1; }

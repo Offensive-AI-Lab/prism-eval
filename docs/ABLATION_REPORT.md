@@ -6,7 +6,7 @@ read by PRISM and the prompt context available during activation extraction.
 | | |
 |---|---|
 | Checkpoint | `prism-qwen3.5-9b-grpo.pt` |
-| Suite | `eval_suite_v2_final`, n = 1,000 (250 each for AP, HO, BC, and BN) |
+| Suite | `eval_suite_final`, n = 1,000 (250 each for AP, HO, BC, and BN) |
 | Judge | gemma4-31B-it, calibrated (paper §G) |
 | Metric names | `Recall` here is Coverage Rate (Cvg) in the paper; `Hallucination` is H; `Judge reward` is R |
 | Boards | `prism_window_ablation_leaderboard`; `prism_context_ablation_leaderboard` |
@@ -284,7 +284,7 @@ conditions — the configs share the evaluation identity.
 
 ## Method & caveats
 
-- **Runs.** 10 window evaluations + 3 context evaluations on the v2 1000-record suite; window rows on `prism_window_ablation_leaderboard`, context rows on `prism_context_ablation_leaderboard`; identical scorer stack and evaluation digest, verified by dry-run before launch. Base responses are greedy and shared across chunk runs via an on-disk response cache keyed on (base model, messages, generation cap).
+- **Runs.** 10 window evaluations + 3 context evaluations on the 1000-record suite; window rows on `prism_window_ablation_leaderboard`, context rows on `prism_context_ablation_leaderboard`; identical scorer stack and evaluation digest, verified by dry-run before launch. Base responses are greedy and shared across chunk runs via an on-disk response cache keyed on (base model, messages, generation cap).
 - **Windows.** Implemented as runner env overrides (`PRISM_EVAL_MAX_ACT_TOKENS`, `PRISM_EVAL_ACT_WINDOW_POS=chunkK`, `PRISM_EVAL_BASE_GEN_MAX_NEW_TOKENS`) so the training checkpoint and the Weave op digests stay untouched.
 - **Conditioning.** A record whose response ends before a chunk yields an empty report and scores exactly 0 on every judge metric, so conditional means are exact rescalings, not re-runs. Supports were derived from the response-length distribution and calibrated to reproduce the trace-level supports of two independent runs exactly (717 and 496).
 - **Low support.** HO responses are short: only 29 reach chunk 4 and 12 reach chunk 5. The flat-coverage claim rests on the well-supported chunks 0–3.

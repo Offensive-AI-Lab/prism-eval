@@ -206,7 +206,7 @@ def batched_annotate_pre_pass(
     n_total = len(records)
 
     # Detect batch capability once. Runners that don't expose run_batch fall
-    # back to a per-record loop under run_lock (same semantics as the v1 path,
+    # back to a per-record loop under run_lock (same semantics as the legacy path,
     # just with the cache populated up front so Stage 2 still fans out).
     has_run_batch = hasattr(runner, "run_batch")
 
@@ -375,10 +375,10 @@ def clear_runner_cache() -> None:
 
 
 def _get_instructions(record: EvalRecord) -> list[str]:
-    """Resolve instruction list from a record (v2 or v1)."""
+    """Resolve instruction list from a record (current or legacy)."""
     if record.instruction_sources is not None:
         return list(record.instruction_sources.get("original", []))
-    # v1 fallback
+    # legacy fallback
     result: list[str] = []
     if record.constraints:
         result.extend(record.constraints)
@@ -662,7 +662,7 @@ def itm_follow_annotate(
 # ─────────────────────────────────────────────────────────────────────────────
 # Scorer wrappers
 # ─────────────────────────────────────────────────────────────────────────────
-# v2 scorer output shape:
+# Scorer output shape (current spec):
 #   instruction_score        float  — alias for `recall`, mean across instruction claims
 #   recall                   float  — mean(instruction_scores), higher = better
 #   instruction_scores_raw   list[float] — preserved per row, NOT aggregated
@@ -675,8 +675,8 @@ def itm_follow_annotate(
 #   setting                  str    — eval's setting (AP/HO/BC/BN/PV/…), carried through
 #                                     so `summarize()` can group by it and emit
 #                                     `<AP>.reward` columns (no by_setting prefix).
-# Dropped vs v1: precision, f1, hallucination_rate, hallucination_count.
-# Old v1 leaderboards using those columns won't render after this commit.
+# Dropped vs legacy: precision, f1, hallucination_rate, hallucination_count.
+# Old legacy leaderboards using those columns won't render after this commit.
 
 
 class ExactMatchScorer(weave.Scorer):
@@ -762,7 +762,7 @@ def _judge_llm_call(
     instructions, itm_report, prompt, model_response, judge_model. ``source``
     is recorded so per-source error analysis can be reconstructed offline
     from these child traces (see ``pull_auto_scores``).
-    Outputs (v2): per-GT-bullet ``instruction_scores`` (with optional
+    Outputs (current): per-GT-bullet ``instruction_scores`` (with optional
     evidence) and per-ITM-bullet ``hallucination_scores`` — both 0/0.5/1.
 
     The judge sees ``prompt`` and ``model_response`` in addition to the GT
@@ -797,7 +797,7 @@ def _judge_llm_call(
 class JudgeLLMScorer(weave.Scorer):
     """LLM-as-judge wrapper. Identity = (judge_model, base_url, reward weights).
 
-    v2 reward formula (matches the trainer's prism/rl/judge.py):
+    Reward formula (matches the trainer's prism/rl/judge.py):
         reward = w_inst * mean(instruction_scores)
                - w_halluc * mean(hallucination_scores)
                - length_penalty
@@ -1409,14 +1409,14 @@ def build_evaluation(
     return weave.Evaluation(name=name, dataset=dataset, scorers=scorers)
 
 
-# Columns Weave shows on the default judge_llm leaderboard. v2 layout:
+# Columns Weave shows on the default judge_llm leaderboard. current layout:
 #   1. Headline = reward (the training-aligned scalar).
 #   2. Component decomposition: recall (higher = better), mean halluc (lower = better).
 #   3. Per-setting reward / recall / halluc so annotators can see how each slice
 #      (AP/HO/BC/BN/PV) decomposes — a verbose runner with high recall but big
 #      length_penalty would otherwise show low per-setting reward with no clue why.
-# Old v1 columns (f1, precision, hallucination_rate) are intentionally absent —
-# they relied on the int hallucination_count which v2 retired.
+# Old legacy columns (f1, precision, hallucination_rate) are intentionally absent —
+# they relied on the int hallucination_count which the current spec retired.
 #
 # Adding columns here is safe for existing leaderboards: the new column refs
 # share the same evaluation digest as the old ones, and summarize() emits the

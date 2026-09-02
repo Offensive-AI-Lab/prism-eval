@@ -18,8 +18,8 @@ from pathlib import Path
 import pytest
 
 CALIB = Path(__file__).parent.parent / "data" / "calibration"
-SNAPSHOT = CALIB / "follow_snapshot_v1.jsonl"
-FROZEN = CALIB / "follow_calibration_v1.json"
+SNAPSHOT = CALIB / "follow_snapshot.jsonl"
+FROZEN = CALIB / "follow_calibration.json"
 
 
 def _rows() -> list[dict]:

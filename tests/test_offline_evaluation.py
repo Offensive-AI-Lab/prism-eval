@@ -215,7 +215,7 @@ experiment:
   name: offline_smoke
   weave_project: null
 suite:
-  path: data/eval_suite_v2_final.json
+  path: data/eval_suite.json
   settings: [BN]
   per_setting_limit:
     BN: 4
@@ -270,7 +270,7 @@ experiment:
   name: no_project
   weave_project: null
 suite:
-  path: data/eval_suite_v2_final.json
+  path: data/eval_suite.json
   settings: [BN]
 runner:
   type: prism

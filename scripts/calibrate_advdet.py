@@ -252,7 +252,7 @@ def _is_gold_schema(rows: list[dict]) -> bool:
 
 
 def calibrate_gold(rows: list[dict]) -> dict:
-    """Reconciled-gold snapshot (advdet_gold_v1.jsonl): identifier vs gold.
+    """Reconciled-gold snapshot (advdet_gold.jsonl): identifier vs gold.
 
     Gold rows carry one reconciled ``gold_indices`` set per record (no
     per-annotator rows), so there is no IAA to compute — the report covers
@@ -460,7 +460,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("-i", "--snapshot", type=Path, required=True,
                         help="JSONL snapshot: per-annotator rows, or the reconciled "
-                             "gold set (data/calibration/advdet_gold_v1.jsonl).")
+                             "gold set (data/calibration/advdet_gold.jsonl).")
     parser.add_argument("-o", "--out", type=Path,
                         help="Optional JSON report path.")
     args = parser.parse_args()

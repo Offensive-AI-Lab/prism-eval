@@ -1,4 +1,4 @@
-"""Judge LLM prompt-parity tests (v2 — per-bullet hallucination scores).
+"""Judge LLM prompt-parity tests (per-bullet hallucination scores).
 
 The judge must see the same inputs as a human annotator — prompt, model
 response, GT instructions, ITM report — so a claim grounded in the prompt
@@ -26,14 +26,14 @@ class _CapturingClient:
 
     def _create(self, **kwargs):
         # Accept any kwargs (model, temperature, messages, max_tokens, etc.) so
-        # this stub keeps working when the v2 judge call gains new knobs.
+        # this stub keeps working when the current judge call gains new knobs.
         self.last_messages = kwargs.get("messages")
         choice = SimpleNamespace(message=SimpleNamespace(content=self._response_text))
         return SimpleNamespace(choices=[choice])
 
 
 def _stub_judge_response(n_instructions: int, n_report_bullets: int = 0) -> str:
-    """Build a v2 two-line text response that the judge would emit."""
+    """Build a two-line text response in the current format."""
     inst = ",".join(["1.0"] * n_instructions)
     halluc = ",".join(["0.0"] * n_report_bullets)
     return f"INSTRUCTIONS: {inst}\nHALLUCINATIONS: {halluc}"
@@ -51,7 +51,7 @@ def test_judge_user_message_includes_prompt_and_response() -> None:
         client=client,
     )
 
-    # v2: per-bullet hallucination scores, hallucination_count deprecated → 0
+    # current: per-bullet hallucination scores, hallucination_count deprecated → 0
     assert out.hallucination_scores == [0.0, 0.0]
     assert out.hallucination_count == 0
     user_content = client.last_messages[1]["content"]

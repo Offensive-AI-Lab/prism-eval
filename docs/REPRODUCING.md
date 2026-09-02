@@ -159,7 +159,7 @@ Definitions, support counts, and results are in
   produce a larger shift.
 - `scripts/build_suite.py` does not regenerate the canonical suite exactly. AP
   and HO generation is sampled, and the generator revision is not pinned. Use
-  `data/eval_suite_v2_final.json` when comparing with the paper.
+  `data/eval_suite.json` when comparing with the paper.
 
 ## Compare with the reference values
 

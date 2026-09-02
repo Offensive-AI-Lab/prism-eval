@@ -20,7 +20,7 @@ Outputs:
 
 Usage:
   python scripts/make_act_swap_pairs.py \
-      --suite data/eval_suite_v2_final.json \
+      --suite data/eval_suite.json \
       --pairs-out results/act_context_ablation/swap_pairs.json \
       --donor-suite-out results/act_context_ablation/donor_suite.json
 """

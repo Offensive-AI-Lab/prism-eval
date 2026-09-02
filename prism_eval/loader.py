@@ -11,16 +11,17 @@ from prism_eval.schema import EvalRecord, EvalSuite
 def load_suite(path: Path) -> EvalSuite:
     """Load an eval suite from a JSON file.
 
-    Accepts both v1 and v2 JSON files. v1 records are auto-upgraded to v2
-    in memory (the file on disk is not modified).
+    Suites generated with the retired pre-release schema are rejected —
+    regenerate them with scripts/build_suite.py or use the shipped suites.
     """
     raw = json.loads(path.read_text())
     version = raw.get("schema_version", "1.0")
 
     if version.startswith("1"):
         raise ValueError(
-            f"{path} is a schema v1 suite, which this release no longer supports. "
-            f"The shipped suites are v2 — see DATA_CARD.md."
+            f"{path} uses a retired schema this release does not support — "
+            f"regenerate it with scripts/build_suite.py, or use the shipped "
+            f"suites (see DATA_CARD.md)."
         )
 
     return EvalSuite.model_validate(raw)

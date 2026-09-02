@@ -1,6 +1,6 @@
-"""Unit tests for the v2 judge response parsers.
+"""Unit tests for the current judge response parsers.
 
-Covers the three helpers introduced in phase 1/5 of the v2 hallucination
+Covers the three helpers of the per-bullet hallucination
 spec migration: ``_parse_text_response`` (two-line format → dict),
 ``_split_report_bullets`` (ITM report → numbered list), and
 ``_parse_csv_scores`` (length-padded CSV → list[float]).

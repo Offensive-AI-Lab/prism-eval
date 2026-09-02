@@ -3,11 +3,11 @@
 experiment:
   name: gemma-2-9b-it-grpo
   notes: "PRISM trained against Gemma-2-9B-it, hook layer 21."
-  tags: [eval_suite_v2, prism, gemma2]
+  tags: [eval_suite, prism, gemma2]
   weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
 
 suite:
-  path: data/eval_suite_v2_final.json
+  path: data/eval_suite.json
   settings: [AP, HO, BC, BN]
 
 runner:
@@ -27,6 +27,6 @@ annotation:
   batch_size: 16
 
 evaluation:
-  evaluation_name: prism_eval_suite_v2_1000
+  evaluation_name: prism_eval_suite_1000
   publish_leaderboard: true
   leaderboard_name: prism_main_leaderboard

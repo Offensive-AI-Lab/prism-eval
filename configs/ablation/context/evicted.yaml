@@ -19,11 +19,11 @@
 experiment:
   name: evicted
   notes: "Act-context ablation, released checkpoint: PRISM_EVAL_ACT_CONTEXT=evicted (prompt physically absent)"
-  tags: [eval_suite_v2, grpo, act_context_ablation, ctx_evicted]
+  tags: [eval_suite, grpo, act_context_ablation, ctx_evicted]
   weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
 
 suite:
-  path: data/eval_suite_v2_final.json
+  path: data/eval_suite.json
   settings: [AP, HO, BC, BN]
 
 runner:

@@ -76,7 +76,7 @@ The schema is defined by `EvalSuite` and `EvalRecord` in
 `instruction_sources["original"]` and should be phrased as individual
 directives.
 
-Do not modify `data/eval_suite_v2_final.json` in place. It is the artifact used
+Do not modify `data/eval_suite.json` in place. It is the artifact used
 for the published results. Add a new versioned suite and configuration instead.
 
 For adversarial settings, retain a record only after verifying that the target

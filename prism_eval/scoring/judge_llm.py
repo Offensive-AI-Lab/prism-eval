@@ -1,4 +1,4 @@
-"""LLM-as-judge scorer (v2 spec — per-bullet hallucination scores).
+"""LLM-as-judge scorer (current spec — per-bullet hallucination scores).
 
 Uses a configurable LLM to score (a) how well each ground-truth instruction is
 covered by the ITM report (recall side, 0/0.5/1 per GT bullet) and (b) how
@@ -7,7 +7,7 @@ hallucinated each ITM bullet is (precision side, 0/0.5/1 per ITM bullet, higher
 
 Response format is plain text (two CSV lines), NOT JSON, to maximise vLLM
 prefix-cache hit-rate and shrink the output token budget. Empirically ~5×
-faster per call vs the v1 JSON format. The judge needs the SAME system prompt
+faster per call vs the legacy JSON format. The judge needs the SAME system prompt
 across all calls for prefix caching to kick in — don't customize per call.
 
 SYSTEM_PROMPT mirrors the trainer's prism/rl/judge.py so the same calibrated judge can
@@ -281,13 +281,13 @@ def score(
     model: str | None = None,
     client: OpenAI | None = None,
 ) -> ScorerOutput:
-    """Score one ITM report against ground-truth instructions using the v2 judge.
+    """Score one ITM report against ground-truth instructions using the current judge.
 
     Returns a ScorerOutput populated with:
       - ``instruction_scores``: per-GT-bullet ClaimScore (0/0.5/1, higher = better recall)
       - ``hallucination_scores``: per-ITM-bullet float (0/0.5/1, higher = worse)
-      - ``hallucination_count``: always 0 in v2 (kept for back-compat readers)
-      - ``hallucination_details``: empty by default — the v2 text format
+      - ``hallucination_count``: always 0 in current records (kept for back-compat readers)
+      - ``hallucination_details``: empty by default — the current text format
         doesn't carry the evidence/reason block
 
     Args:
@@ -379,8 +379,8 @@ def _parse_v2_response(
         scorer="judge_llm",
         instruction_scores=i_scores,
         hallucination_scores=halluc_floats,
-        hallucination_count=0,  # v1 field; deprecated, always 0 in v2 records
-        hallucination_details=[],  # v2 text format doesn't carry evidence
+        hallucination_count=0,  # legacy field; deprecated, always 0 in current records
+        hallucination_details=[],  # current text format doesn't carry evidence
     )
 
 

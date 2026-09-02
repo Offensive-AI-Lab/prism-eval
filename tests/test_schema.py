@@ -17,7 +17,7 @@ from prism_eval.schema import (
 
 
 def _minimal_v2(**overrides) -> dict:
-    """Build a minimal v2 record dict."""
+    """Build a minimal current-spec record dict."""
     base = dict(
         eval_id="TEST-001",
         setting="BC",
@@ -34,7 +34,7 @@ def _minimal_v2(**overrides) -> dict:
 
 
 def _minimal_v1(**overrides) -> dict:
-    """Build a minimal v1 record dict (backward compat)."""
+    """Build a minimal legacy record dict (backward compat)."""
     base = dict(
         schema_version="1.0",
         eval_id="TEST-001",

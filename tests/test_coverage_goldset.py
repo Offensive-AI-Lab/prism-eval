@@ -1,11 +1,11 @@
 """The scoring-judge gold set must reproduce its published numbers.
 
-`data/calibration/coverage_gold_v1.jsonl` is the calibration behind the
+`data/calibration/coverage_gold.jsonl` is the calibration behind the
 *coverage* and *hallucination* metrics. Two annotators scored every claim
 independently, then sat together and reconciled each disagreement into a single
 **gold** label. Both the independent labels and the reconciled gold ship.
 
-`coverage_calibration_v1.json` holds the agreement statistics computed from
+`coverage_calibration.json` holds the agreement statistics computed from
 them. These tests recompute those statistics through the same code path as
 `scripts/calibrate_judge.py`, so the data, the shipped tool and the published
 numbers cannot drift apart.
@@ -28,9 +28,9 @@ import pytest
 
 REPO = Path(__file__).parent.parent
 CALIB = REPO / "data" / "calibration"
-GOLD = CALIB / "coverage_gold_v1.jsonl"
-ADVDET = CALIB / "advdet_gold_v1.jsonl"
-FROZEN = CALIB / "coverage_calibration_v1.json"
+GOLD = CALIB / "coverage_gold.jsonl"
+ADVDET = CALIB / "advdet_gold.jsonl"
+FROZEN = CALIB / "coverage_calibration.json"
 
 ANNOTATORS = ("annotator_a", "annotator_b")
 SCALE = {0.0, 0.5, 1.0}

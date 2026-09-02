@@ -1,9 +1,9 @@
-# Data card — PRISM eval suite v2
+# Data card — PRISM eval suite
 
-The canonical benchmark is **`data/eval_suite_v2_final.json`**: 1000 single-turn
+The canonical benchmark is **`data/eval_suite.json`**: 1000 single-turn
 records, 250 in each of four settings. Every published number in this repo is
 computed against this exact file. The four per-setting files
-(`eval_suite_v2_{AP,HO,BC,BN}.json`) are its components and contain the same
+(`eval_suite_{AP,HO,BC,BN}.json`) are its components and contain the same
 records.
 
 Generated 2026-05-19, seed `42`. Ground truth is a list of instruction strings
@@ -109,11 +109,11 @@ The three judges have separate calibration sets:
 
 | File | Judge | Contents |
 |---|---|---|
-| `coverage_gold_v1.jsonl` | scoring | **93 reports / 373 gold labels** across three rounds. Each row: prompt, target-model response, ground-truth instructions, ITM report and bullets, the published judge's per-claim scores, the reconciled **gold** label, and both annotators' independent pre-reconciliation labels where they exist. |
-| `advdet_gold_v1.jsonl` | advdet | 50 reports with the reconciled gold set of adversarial bullet indices, plus the judge's picks. Sampling strata: `configs/advdet_queue_spec_v1.json`. |
-| `coverage_calibration_v1.json` | scoring + advdet | The frozen agreement report computed from both. |
-| `follow_snapshot_v1.jsonl` | FOLLOWED | 184 (call, annotator) records; 92 calls double-annotated. Stratified over three agent-injection sources (bipia, injecagent, llmail) × followed/refused. |
-| `follow_calibration_v1.json` | FOLLOWED | The frozen agreement report computed from it. |
+| `coverage_gold.jsonl` | scoring | **93 reports / 373 gold labels** across three rounds. Each row: prompt, target-model response, ground-truth instructions, ITM report and bullets, the published judge's per-claim scores, the reconciled **gold** label, and both annotators' independent pre-reconciliation labels where they exist. |
+| `advdet_gold.jsonl` | advdet | 50 reports with the reconciled gold set of adversarial bullet indices, plus the judge's picks. Sampling strata: `configs/advdet_queue_spec.json`. |
+| `coverage_calibration.json` | scoring + advdet | The frozen agreement report computed from both. |
+| `follow_snapshot.jsonl` | FOLLOWED | 184 (call, annotator) records; 92 calls double-annotated. Stratified over three agent-injection sources (bipia, injecagent, llmail) × followed/refused. |
+| `follow_calibration.json` | FOLLOWED | The frozen agreement report computed from it. |
 
 Nothing here requires Weave, a W&B account, or network access. The labels are
 files, and `scripts/calibrate_judge.py` reads them directly.
@@ -161,7 +161,7 @@ frozen report.
 
 ### Adversarial-detection judge
 
-`advdet_gold_v1.jsonl` — 50 AP/HO reports where the annotators agreed a gold set
+`advdet_gold.jsonl` — 50 AP/HO reports where the annotators agreed a gold set
 of bullet indices naming the adversarial instruction. Scored as exact set
 equality: **the judge matches gold on 49 of 50**. The single miss is a false
 positive (`AP-B1-167`: gold names no adversarial bullet, the judge picked two).
@@ -182,11 +182,11 @@ suspicious.
 Recompute it yourself from the raw labels:
 
 ```bash
-python scripts/calibrate_follow.py -i data/calibration/follow_snapshot_v1.jsonl
+python scripts/calibrate_follow.py -i data/calibration/follow_snapshot.jsonl
 ```
 
 `tests/test_calibration_goldset.py` recomputes the pooled judge-vs-human κ
-directly from `follow_snapshot_v1.jsonl` and asserts it matches the frozen
+directly from `follow_snapshot.jsonl` and asserts it matches the frozen
 report to 1e-9, so the data and the published numbers cannot drift apart.
 
 **Annotators are pseudonymous everywhere.** They are `annotator_a` and

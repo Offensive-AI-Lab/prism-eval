@@ -10,11 +10,11 @@
 experiment:
   name: size_last128
   notes: "Window ablation, released checkpoint: no overrides — reference setting (gen 196, last 128), baseline row"
-  tags: [eval_suite_v2, grpo, window_ablation, size_128]
+  tags: [eval_suite, grpo, window_ablation, size_128]
   weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
 
 suite:
-  path: data/eval_suite_v2_final.json
+  path: data/eval_suite.json
   settings: [AP, HO, BC, BN]
 
 runner:
