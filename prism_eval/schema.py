@@ -165,7 +165,7 @@ class ScorerOutput(BaseModel):
     v2 hallucination spec (current): per-bullet ``hallucination_scores`` —
     one score per ITM-REPORT bullet in {0.0, 0.5, 1.0}, where higher = more
     hallucinated. ``mean(hallucination_scores)`` is the canonical halluc
-    metric (drives the reward formula in rl_phase1 and the leaderboard).
+    metric (drives the training reward formula and the leaderboard).
 
     v1 (deprecated): ``hallucination_count`` (int) — count of fully
     fabricated claims. Kept on the model so legacy snapshots still load,

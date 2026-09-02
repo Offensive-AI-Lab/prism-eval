@@ -10,8 +10,8 @@ prefix-cache hit-rate and shrink the output token budget. Empirically ~5×
 faster per call vs the v1 JSON format. The judge needs the SAME system prompt
 across all calls for prefix caching to kick in — don't customize per call.
 
-SYSTEM_PROMPT mirrors rl_phase1/judge_pref.py so the same calibrated judge can
-drive both reward computation (rl_phase1) and offline scoring (this module).
+SYSTEM_PROMPT mirrors the trainer's prism/rl/judge.py so the same calibrated judge can
+drive both the training reward and offline scoring (this module).
 
 Set PRISM_EVAL_MODEL and (optionally) PRISM_EVAL_BASE_URL / PRISM_EVAL_API_KEY env vars
 to point at your preferred provider.
@@ -198,7 +198,7 @@ def _parse_text_response(text: str) -> dict:
 
 
 # Bullet splitter used to number ITM REPORT bullets so the judge's
-# hallucination_scores CSV aligns 1:1 with our index. Identical to rl_phase1's.
+# hallucination_scores CSV aligns 1:1 with our index. Identical to the trainer's.
 _BULLET_RE = re.compile(r"^[\s]*(?:[-*•]|\d+\.)\s+(.*)$")
 
 
@@ -207,7 +207,7 @@ def _split_report_bullets(report: str) -> list[str]:
 
     Tries bullet/numbered patterns first, then paragraph splits, then the
     whole-report-as-one-claim fallback. Mirrors
-    ``rl_phase1.judge_pref.split_instructions`` — keep the two in sync.
+    ``prism.rl.judge.split_instructions`` in the training repo — keep the two in sync.
     """
     bullets: list[str] = []
     for raw in report.splitlines():
@@ -238,7 +238,7 @@ def _split_report_bullets(report: str) -> list[str]:
     # splitting legitimate appositions ("Maya - a French archaeologist").
     # Numbered markers ("1. ") are deliberately excluded — periods are
     # too common in prose to risk a false-positive split. The under-
-    # bullet length penalty in rl_phase1 catches any collapse pattern
+    # bullet length penalty in training catches any collapse pattern
     # the splitter misses (single bullet → shortfall >= k_min*n_gt).
     if len(bullets) == 1:
         for sep in (" - ", " * ", " • "):

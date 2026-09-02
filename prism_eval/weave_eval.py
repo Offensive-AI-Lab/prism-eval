@@ -670,7 +670,7 @@ def itm_follow_annotate(
 #   hallucination_scores     list[float] — judge_llm only; per-ITM-bullet 0/0.5/1
 #   mean_hallucination_score float  — judge_llm only; mean(hallucination_scores), 0 if empty
 #   reward                   float  — judge_llm only; w_inst*recall − w_halluc*mean_halluc
-#                                     − length_penalty (matches rl_phase1's reward formula)
+#                                     − length_penalty (matches the training reward formula)
 #   length_penalty           float  — judge_llm only; ≥ 0, penalises ITM verbosity
 #   setting                  str    — eval's setting (AP/HO/BC/BN/PV/…), carried through
 #                                     so `summarize()` can group by it and emit
@@ -797,7 +797,7 @@ def _judge_llm_call(
 class JudgeLLMScorer(weave.Scorer):
     """LLM-as-judge wrapper. Identity = (judge_model, base_url, reward weights).
 
-    v2 reward formula (matches rl_phase1/judge_pref.py):
+    v2 reward formula (matches the trainer's prism/rl/judge.py):
         reward = w_inst * mean(instruction_scores)
                - w_halluc * mean(hallucination_scores)
                - length_penalty
@@ -806,7 +806,7 @@ class JudgeLLMScorer(weave.Scorer):
                      if enabled else 0.0
 
     Defaults (w_inst=1.0, w_halluc=0.4, length_penalty_enabled=True, k=1.5,
-    lambda=0.15) match rl_phase1/config.py so eval_suite and rl_phase1
+    lambda=0.15) match the trainer's prism/rl/config.py so eval_suite and rl_phase1
     produce the same reward for the same (instructions, report) pair —
     leaderboards are directly comparable to RL training rewards.
     """
@@ -876,7 +876,7 @@ class JudgeLLMScorer(weave.Scorer):
             if hallucination_scores else 0.0
         )
 
-        # Length penalty mirrors rl_phase1: punish ITM reports whose bullet
+        # Length penalty mirrors training: punish ITM reports whose bullet
         # count exceeds k * gt_count. Bounds verbosity-for-partial-credit
         # hacking — judge alone can't tell that 12 vague bullets covering
         # 4 GT claims is worse than 4 specific bullets.
@@ -1410,7 +1410,7 @@ def build_evaluation(
 
 
 # Columns Weave shows on the default judge_llm leaderboard. v2 layout:
-#   1. Headline = reward (the rl_phase1-aligned scalar).
+#   1. Headline = reward (the training-aligned scalar).
 #   2. Component decomposition: recall (higher = better), mean halluc (lower = better).
 #   3. Per-setting reward / recall / halluc so annotators can see how each slice
 #      (AP/HO/BC/BN/PV) decomposes — a verbose runner with high recall but big

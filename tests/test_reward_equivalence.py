@@ -1,12 +1,12 @@
-"""Reward-formula equivalence: eval_suite leaderboard ≡ rl_phase1 training reward.
+"""Reward-formula equivalence: eval_suite leaderboard ≡ the trainer's GRPO reward.
 
-The whole point of the v2 spec migration is that eval_suite and rl_phase1 are
+The whole point of the v2 spec migration is that the eval suite and the trainer are
 driven by *the same number*: a JudgeLLMScorer's per-row ``reward`` and an
-rl_phase1 GRPO step's per-candidate ``reward`` should be identical when given
+training GRPO step's per-candidate ``reward`` should be identical when given
 the same (recall, mean_hallucination_score, n_gt, n_itm) inputs. If anyone
 retunes the weights in one place without updating the other, this test fires.
 
-We deliberately don't import rl_phase1 (separate repo) — instead, we
+We deliberately don't import the trainer (separate repo) — instead, we
 re-derive its formula inline using the canonical default weights and assert
 the eval_suite JudgeLLMScorer's ``.score()`` produces the same scalar.
 """
@@ -20,15 +20,15 @@ import pytest
 from prism_eval import weave_eval
 
 
-# Canonical reward formula, ported from rl_phase1/judge_pref.py. Any change
-# here must be matched in rl_phase1/config.py and weave_eval.py defaults.
+# Canonical reward formula, ported from the trainer's prism/rl/judge.py. Any change
+# here must be matched in the trainer's prism/rl/config.py and weave_eval.py defaults.
 _W_INST_CANONICAL = 1.0
 _W_HALLUC_CANONICAL = 0.4
 _LP_K_CANONICAL = 1.5
 _LP_LAMBDA_CANONICAL = 0.15
 
 
-def _rl_phase1_reward(
+def _trainer_reward(
     recall: float,
     mean_halluc: float,
     n_gt: int,
@@ -38,7 +38,7 @@ def _rl_phase1_reward(
     k: float = _LP_K_CANONICAL,
     lam: float = _LP_LAMBDA_CANONICAL,
 ) -> float:
-    """Verbatim reproduction of rl_phase1's reward formula."""
+    """Verbatim reproduction of the trainer's reward formula."""
     length_penalty = lam * max(0.0, n_itm - k * n_gt)
     return w_inst * recall - w_halluc * mean_halluc - length_penalty
 
@@ -114,27 +114,27 @@ def _run_scorer(
         ("0.5,0.5", "0.5,0.5,1.0", 2, 3),
     ],
 )
-def test_scorer_reward_matches_rl_phase1_formula(
+def test_scorer_reward_matches_trainer_formula(
     inst_csv: str, halluc_csv: str, n_instructions: int, n_itm: int
 ) -> None:
     instructions = [f"gt_{i}" for i in range(n_instructions)]
     out = _run_scorer(inst_csv, halluc_csv, instructions, n_itm)
 
-    expected = _rl_phase1_reward(
+    expected = _trainer_reward(
         recall=out["coverage"],
         mean_halluc=out["mean_hallucination_score"],
         n_gt=n_instructions,
         n_itm=n_itm,
     )
     assert out["reward"] == pytest.approx(expected, abs=1e-9), (
-        f"eval_suite reward {out['reward']} != rl_phase1 formula {expected} "
+        f"eval_suite reward {out['reward']} != trainer formula {expected} "
         f"for inst={inst_csv} halluc={halluc_csv} n_gt={n_instructions} n_itm={n_itm}"
     )
 
 
 def test_scorer_defaults_match_canonical_weights() -> None:
     """If someone retunes JudgeLLMScorer defaults without updating
-    rl_phase1/config.py, the parametrised test above would still pass
+    the trainer's prism/rl/config.py, the parametrised test above would still pass
     (it uses the scorer's own weights). This catches drift directly."""
     s = weave_eval.JudgeLLMScorer(judge_model="stub")
     assert s.instruction_weight == _W_INST_CANONICAL
