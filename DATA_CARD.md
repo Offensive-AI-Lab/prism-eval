@@ -115,7 +115,6 @@ The three judges have separate calibration sets:
 | `published/` | — | The original frozen reports behind the paper's numbers, pseudonymised. See below. |
 | `follow_snapshot_v1.jsonl` | FOLLOWED | 184 (call, annotator) records; 92 calls double-annotated. Stratified over three agent-injection sources (bipia, injecagent, llmail) × followed/refused. |
 | `follow_calibration_v1.json` | FOLLOWED | The frozen agreement report computed from it. |
-| `judge_swap/<model>/` | FOLLOWED | Dev/holdout κ reports for three candidate judge models — `gemma4-31B-it` (the published judge), `gpt-oss-120b`, `seed-oss-36b`. |
 
 Nothing here requires Weave, a W&B account, or network access. The labels are
 files, and `scripts/calibrate_judge.py` reads them directly.
