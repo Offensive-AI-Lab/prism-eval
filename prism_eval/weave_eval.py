@@ -813,10 +813,10 @@ class JudgeLLMScorer(weave.Scorer):
 
     judge_model: str
     judge_base_url: str | None = None
-    # Reward formula knobs — keep aligned with rl_phase1/config.py
-    # (RL_PHASE1_CONFIG: instruction_weight=1.0, hallucination_weight=0.4,
-    #  length_penalty_enabled=True, length_penalty_k=1.5,
-    #  length_penalty_lambda=0.15).
+    # Reward formula knobs — keep aligned with the trainer's RL config
+    # (prism/src/prism/rl/config.py: instruction_weight=1.0,
+    #  hallucination_weight=0.4, length_penalty_enabled=True,
+    #  length_penalty_k=1.5, length_penalty_lambda=0.15).
     instruction_weight: float = 1.0
     hallucination_weight: float = 0.4
     length_penalty_enabled: bool = True
