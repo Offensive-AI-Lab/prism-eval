@@ -4,12 +4,12 @@
 # on prism_window_ablation_leaderboard. Window/generation params are env-var overrides
 # set by scripts/run_ablation_window.sh (runner _cfg comes from the
 # checkpoint, so YAML can't carry them):
-#   no overrides — published setting (gen 196, last 128), baseline row
-# Checkpoint = GRPO 19k (same as GRPO_final_calibjudge_prio_best_19k row).
+#   no overrides — reference setting (gen 196, last 128), baseline row
+# Checkpoint = released checkpoint.
 
 experiment:
   name: size_last128
-  notes: "Window ablation, GRPO 19k: no overrides — published setting (gen 196, last 128), baseline row"
+  notes: "Window ablation, released checkpoint: no overrides — reference setting (gen 196, last 128), baseline row"
   tags: [eval_suite_v2, grpo, window_ablation, size_128]
   weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
 
@@ -19,7 +19,7 @@ suite:
 
 runner:
   type: prism
-  display_name: "window size 128 (published)"
+  display_name: "window size 128 (reference)"
   checkpoint: ${PRISM_EVAL_CHECKPOINT_DIR}/prism-qwen3.5-9b-grpo.pt
   device: cuda
 

@@ -4,9 +4,6 @@
 # activations into embedding space, prepend as soft tokens, decode with LoRA.
 # Same architecture as configs/main/qwen3.5-9b-sft.yaml — the difference is the training
 # recipe (GRPO on top of the SFT initialisation).
-#
-# Checkpoint is pinned to a specific step rather than a `best.pt` symlink,
-# which moves.
 
 experiment:
   name: qwen3.5-9b-grpo

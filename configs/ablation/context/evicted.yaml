@@ -10,7 +10,7 @@
 # placeholder user turn ('...'); the instruction tokens are physically
 # absent, simulating real context-window overflow. Compare against the
 # text-only baseline: anything above it is latent response-state signal.
-# Checkpoint = GRPO 19k, published window (last 128 of a 196-cap response).
+# Checkpoint = released checkpoint, reference window (last 128 of a 196-cap response).
 #
 # All 5 context conditions share evaluation_name=prism_context_ablation and
 # land on prism_context_ablation_leaderboard (own board — do NOT reuse the main or
@@ -18,7 +18,7 @@
 
 experiment:
   name: evicted
-  notes: "Act-context ablation, GRPO 19k: PRISM_EVAL_ACT_CONTEXT=evicted (prompt physically absent)"
+  notes: "Act-context ablation, released checkpoint: PRISM_EVAL_ACT_CONTEXT=evicted (prompt physically absent)"
   tags: [eval_suite_v2, grpo, act_context_ablation, ctx_evicted]
   weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
 

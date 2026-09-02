@@ -18,15 +18,18 @@ Values are split means; each row is one validation-selected checkpoint.
 | Activation Oracles (Qwen3-8B) | 0.821 | 0.832 | 0.028 | 0.362 | 0.362 | 0.000 | 0.243 | 0.243 | 0.000 | 0.342 | 0.344 | 0.004 | 0.442 | 0.445 | 0.008 |
 | LatentQA (Qwen3.5-9B) | 0.761 | 0.767 | 0.016 | 0.305 | 0.311 | 0.016 | 0.366 | 0.366 | 0.000 | 0.304 | 0.325 | 0.052 | 0.434 | 0.442 | 0.021 |
 | Activation Oracles (Qwen3.5-9B) | 0.892 | 0.898 | 0.004 | 0.396 | 0.398 | 0.004 | 0.417 | 0.417 | 0.000 | 0.423 | 0.429 | 0.015 | 0.532 | 0.536 | 0.006 |
-| **PRISM w/o RL** (Qwen3.5-9B) | 0.964 | **0.971** | 0.002 | 0.617 | 0.661 | 0.033 | 0.563 | 0.599 | 0.028 | 0.468 | 0.531 | 0.086 | 0.653 | 0.691 | 0.037 |
-| **PRISM** (Qwen3.5-9B) | **0.970** | 0.970 | 0.000 | **0.731** | **0.738** | 0.018 | **0.595** | **0.601** | 0.014 | **0.649** | **0.671** | 0.025 | **0.736** | **0.745** | 0.014 |
+| **PRISM w/o RL** (Qwen3.5-9B) | 0.964 | 0.971 | 0.002 | 0.617 | 0.661 | 0.033 | 0.563 | 0.599 | 0.028 | 0.468 | 0.531 | 0.086 | 0.653 | 0.691 | 0.037 |
+| **PRISM** (Qwen3.5-9B) | **0.967** | **0.977** | 0.002 | **0.751** | **0.761** | 0.022 | **0.641** | **0.646** | 0.008 | **0.658** | **0.685** | 0.048 | **0.754** | **0.767** | 0.020 |
 
 BN = Benign · BC = Behavioral Constraints · HO = Hidden Objectives · AP = Adversarial Prompt.
 
 PRISM has the highest reward and coverage in each setting. Relative to PRISM
-without RL, AP coverage increases from 0.531 to 0.671 and AP hallucination
-decreases from 0.086 to 0.025. Several baselines have lower hallucination rates
+without RL, AP coverage increases from 0.531 to 0.685 and AP hallucination
+decreases from 0.086 to 0.048. Several baselines have lower hallucination rates
 but also substantially lower coverage.
+
+Adversarial-instruction detection is 0.844 on HO and 0.676 on AP, for a mean of
+0.760 across the two adversarial settings.
 
 The GPT-5.5 text-only control sees the response but no hidden states. Its benign
 coverage is 0.919, while coverage is lower on the adversarial settings (0.461
@@ -60,10 +63,9 @@ Each was run against its own target model as labelled in the table above.
 
 ## Reproducing a row
 
-The **PRISM** row above is `qwen3.5-9b-grpo`, using the
-`prism-qwen3.5-9b-grpo` checkpoint. That is the published model and the one to
-reach for unless you specifically want to isolate the RL stage (`-sft`) or a
-different target model.
+The **PRISM** and **PRISM w/o RL** rows use the released GRPO and SFT
+checkpoints, respectively. The GRPO checkpoint is the default model for
+evaluation; use the SFT checkpoint only to isolate the effect of RL.
 
 ```bash
 python scripts/download_weights.py --only prism-qwen3.5-9b-grpo
@@ -71,16 +73,6 @@ export PRISM_EVAL_CHECKPOINT_DIR=./checkpoints
 cp .env.example .env                             # judge endpoint
 prism-eval evaluate --config configs/main/qwen3.5-9b-grpo.yaml --offline
 ```
-
-**Pipeline check.** Running the shipped code against the shipped checkpoints
-reproduces the paper where the checkpoint is unchanged:
-
-| Row | R | Cvg | H |
-|---|---|---|---|
-| PRISM w/o RL — paper Table 1 | 0.653 | 0.691 | 0.037 |
-| PRISM w/o RL — `configs/main/qwen3.5-9b-sft.yaml`, this code | 0.652 | 0.690 | 0.038 |
-
-All three metrics land within 0.001.
 
 A repeated `qwen3.5-9b-grpo` run should be close to, but may not exactly match,
 the PRISM row. Generation is greedy in the released evaluator, but GPU kernels

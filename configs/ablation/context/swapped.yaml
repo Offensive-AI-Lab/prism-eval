@@ -11,7 +11,7 @@
 # swap_pairs.json). Directional test: leaderboard scores report-vs-
 # ORIGINAL instruction; score offline against donor_suite.json for
 # report-vs-DONOR. Whichever wins says where the bits come from.
-# Checkpoint = GRPO 19k, published window (last 128 of a 196-cap response).
+# Checkpoint = released checkpoint, reference window (last 128 of a 196-cap response).
 #
 # All 5 context conditions share evaluation_name=prism_context_ablation and
 # land on prism_context_ablation_leaderboard (own board — do NOT reuse the main or
@@ -19,7 +19,7 @@
 
 experiment:
   name: swapped
-  notes: "Act-context ablation, GRPO 19k: PRISM_EVAL_ACT_CONTEXT=swapped (donor prompt behind fixed response)"
+  notes: "Act-context ablation, released checkpoint: PRISM_EVAL_ACT_CONTEXT=swapped (donor prompt behind fixed response)"
   tags: [eval_suite_v2, grpo, act_context_ablation, ctx_swapped]
   weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
 

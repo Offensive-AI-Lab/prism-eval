@@ -5,12 +5,16 @@ read by PRISM and the prompt context available during activation extraction.
 
 | | |
 |---|---|
-| Checkpoint | `prism-qwen3.5-9b-grpo.pt` (validation reward 0.9283) |
+| Checkpoint | `prism-qwen3.5-9b-grpo.pt` |
 | Suite | `eval_suite_v2_final`, n = 1,000 (250 each for AP, HO, BC, and BN) |
 | Judge | gemma4-31B-it, calibrated (paper §G) |
 | Metric names | `Recall` here is Coverage Rate (Cvg) in the paper; `Hallucination` is H; `Judge reward` is R |
 | Boards | `prism_window_ablation_leaderboard`; `prism_context_ablation_leaderboard` |
 | Runs | 2026-07-09 to 2026-07-10 |
+
+All ablations use the released checkpoint. The reference conditions use the
+same activation window and extraction context as the main evaluation; the other
+rows change only the condition named in each table.
 
 ## Findings
 
@@ -25,7 +29,7 @@ read by PRISM and the prompt context available during activation extraction.
    more sensitive to the activation-token budget.
 4. HO detection is 0.810–0.900 across chunks 0–3. AP detection decreases from
    0.720 in chunk 0 to 0.432 in chunk 5.
-5. Coverage is 0.767 for the published last-128-of-196 condition and 0.794 for
+5. Coverage is 0.767 for the reference last-128-of-196 condition and 0.794 for
    the first 128 tokens of responses generated to natural EOS.
 6. Removing prompt access during extraction reduces overall coverage to 0.538
    with prompt attention masked and 0.443 with response-only prefill. BN retains
@@ -33,7 +37,7 @@ read by PRISM and the prompt context available during activation extraction.
 
 ## Ablation A: window size
 
-Generation held at the published 196-token cap; the monitor reads the last k ∈ {16, 32, 64, 128} response-token activations (or the whole response when shorter).
+Generation uses a 196-token cap; the monitor reads the last k ∈ {16, 32, 64, 128} response-token activations (or the whole response when shorter).
 
 ### Overall (1000 records; detection over the 500 adversarial)
 
@@ -156,9 +160,12 @@ HO, and BC.
 
 ## Ablation C: extraction context
 
-Same responses, same window (published last-128-of-196), same monitor — only the forward pass that *reads* the activations changes. Base responses are always generated with full context, so behavior is held fixed.
+Same responses, same reference window (last 128 tokens of a response capped at
+196 tokens), and the same monitor; only the forward pass that reads the
+activations changes. Base responses are always generated with full context, so
+behavior is held fixed.
 
-- **full context** — prompt + response, the published extraction (baseline; reproduces the main-board row).
+- **full context** — prompt + response, the reference condition for this ablation.
 - **attention zeroed (system+user)** — identical token sequence, but the attention mask zeroes the system and user turns during extraction: response positions can't look back at the prompt. (`masked_prompt` in the configs.)
 - **prefill (response only)** — the response is prefilled behind a neutral placeholder user turn and the hidden states are taken from that pass: pure response-trace activations, as if the original prompt had scrolled out of the context window. (`evicted` in the configs.)
 
@@ -281,6 +288,6 @@ conditions — the configs share the evaluation identity.
 - **Windows.** Implemented as runner env overrides (`PRISM_EVAL_MAX_ACT_TOKENS`, `PRISM_EVAL_ACT_WINDOW_POS=chunkK`, `PRISM_EVAL_BASE_GEN_MAX_NEW_TOKENS`) so the training checkpoint and the Weave op digests stay untouched.
 - **Conditioning.** A record whose response ends before a chunk yields an empty report and scores exactly 0 on every judge metric, so conditional means are exact rescalings, not re-runs. Supports were derived from the response-length distribution and calibrated to reproduce the trace-level supports of two independent runs exactly (717 and 496).
 - **Low support.** HO responses are short: only 29 reach chunk 4 and 12 reach chunk 5. The flat-coverage claim rests on the well-supported chunks 0–3.
-- **Context ablation.** The three extraction modes run on the published setting via `PRISM_EVAL_ACT_CONTEXT`; base responses are generated with full context in every mode, so behavior is held constant and only the reading pass varies. Masked/prefill windows are out-of-distribution for the probe (trained on full-context extraction), so their coverage is a lower bound on what the response trace contains.
+- **Context ablation.** The three extraction modes use the reference setting via `PRISM_EVAL_ACT_CONTEXT`; base responses are generated with full context in every mode, so behavior is held constant and only the reading pass varies. Masked/prefill windows are out-of-distribution for the probe (trained on full-context extraction), so their coverage is a lower bound on what the response trace contains.
 - **Judge caveat.** The monitor (projection + GRPO-tuned LoRA decoder) was trained on end-aligned 128-token windows, so off-position windows are mildly out-of-distribution; measured coverage at early and middle positions is, if anything, a lower bound.
 - **EOS.** Under the 2048 cap the mean response is 554 tokens and ≥99% terminate naturally (23.7% had been truncated by the earlier 768 cap used in the first/middle/last variant).

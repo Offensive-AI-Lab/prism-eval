@@ -26,8 +26,8 @@ suite:
 
 runner:
   type: prism
-  display_name: GRPO_anti_collapse_20k
-  # Best GRPO RL checkpoint . best.pt -> best_step19000_v0.9283.
+  display_name: "PRISM (Qwen3.5-9B, GRPO)"
+  # Released PRISM checkpoint.
   # Loaded via the prism runner (Qwen3.5-9B + LoRA + projection).
   checkpoint: ${PRISM_EVAL_CHECKPOINT_DIR}/prism-qwen3.5-9b-grpo.pt
   device: cuda

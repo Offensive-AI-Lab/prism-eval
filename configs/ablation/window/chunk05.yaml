@@ -6,11 +6,11 @@
 # Same evaluation_name/leaderboard as the size/position runs.
 # Env (set by scripts/run_ablation_window_chunks.sh):
 #   PRISM_EVAL_ACT_WINDOW_POS=chunk5 PRISM_EVAL_BASE_GEN_MAX_NEW_TOKENS=2048 (tokens 640-767 of full response)
-# Checkpoint = GRPO 19k. Generation cap 2048 so ~all responses reach EOS.
+# Checkpoint = released checkpoint. Generation cap 2048 so ~all responses reach EOS.
 
 experiment:
   name: chunk05
-  notes: "Window chunk ablation, GRPO 19k: PRISM_EVAL_ACT_WINDOW_POS=chunk5 PRISM_EVAL_BASE_GEN_MAX_NEW_TOKENS=2048 (tokens 640-767 of full response)"
+  notes: "Window chunk ablation, released checkpoint: PRISM_EVAL_ACT_WINDOW_POS=chunk5 PRISM_EVAL_BASE_GEN_MAX_NEW_TOKENS=2048 (tokens 640-767 of full response)"
   tags: [eval_suite_v2, grpo, window_ablation, chunk_5]
   weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
 

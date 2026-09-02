@@ -4,7 +4,7 @@
 
 experiment:
   name: prism_xpia_smoke
-  notes: "Smoke validation (20 records) on GRPO anti-collapse-20k checkpoint."
+  notes: "Smoke validation on 20 XPIA records using the released PRISM checkpoint."
   tags: [xpia, xpia, smoke]
   weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
 
@@ -14,7 +14,7 @@ suite:
 
 runner:
   type: prism
-  display_name: GRPO_anti_collapse_20k
+  display_name: "PRISM (Qwen3.5-9B, GRPO)"
   checkpoint: ${PRISM_EVAL_CHECKPOINT_DIR}/prism-qwen3.5-9b-grpo.pt
   device: cuda
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Chunk ablation: 6 sequential runs of the GRPO 19k checkpoint, each reading
+# Chunk ablation: 6 sequential runs of the released checkpoint, each reading
 # a different consecutive 128-token chunk of the (near-uncapped, 2048-token)
 # base response. Same board as the size/position sweep.
 #

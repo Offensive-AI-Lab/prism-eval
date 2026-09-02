@@ -5,11 +5,11 @@
 # set by scripts/run_ablation_window.sh (runner _cfg comes from the
 # checkpoint, so YAML can't carry them):
 #   PRISM_EVAL_MAX_ACT_TOKENS=32 (gen 196, end-aligned)
-# Checkpoint = GRPO 19k (same as GRPO_final_calibjudge_prio_best_19k row).
+# Checkpoint = released checkpoint.
 
 experiment:
   name: size_last32
-  notes: "Window ablation, GRPO 19k: PRISM_EVAL_MAX_ACT_TOKENS=32 (gen 196, end-aligned)"
+  notes: "Window ablation, released checkpoint: PRISM_EVAL_MAX_ACT_TOKENS=32 (gen 196, end-aligned)"
   tags: [eval_suite_v2, grpo, window_ablation, size_32]
   weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
 

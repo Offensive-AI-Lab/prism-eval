@@ -9,7 +9,7 @@
 # This run: masked_prompt — same token sequence as full, but the attention mask
 # zeroes system + user + generation-prompt positions, so response tokens
 # can only attend to each other. Most surgical "prompt unreachable" knob.
-# Checkpoint = GRPO 19k, published window (last 128 of a 196-cap response).
+# Checkpoint = released checkpoint, reference window (last 128 of a 196-cap response).
 #
 # All 5 context conditions share evaluation_name=prism_context_ablation and
 # land on prism_context_ablation_leaderboard (own board — do NOT reuse the main or
@@ -17,7 +17,7 @@
 
 experiment:
   name: masked_prompt
-  notes: "Act-context ablation, GRPO 19k: PRISM_EVAL_ACT_CONTEXT=masked_prompt (prompt hidden from attention)"
+  notes: "Act-context ablation, released checkpoint: PRISM_EVAL_ACT_CONTEXT=masked_prompt (prompt hidden from attention)"
   tags: [eval_suite_v2, grpo, act_context_ablation, ctx_masked_prompt]
   weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
 

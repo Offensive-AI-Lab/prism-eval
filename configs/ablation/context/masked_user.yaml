@@ -8,7 +8,7 @@
 #
 # This run: masked_user — like masked_prompt but the system turn stays
 # visible; only the user turn is hidden from attention.
-# Checkpoint = GRPO 19k, published window (last 128 of a 196-cap response).
+# Checkpoint = released checkpoint, reference window (last 128 of a 196-cap response).
 #
 # All 5 context conditions share evaluation_name=prism_context_ablation and
 # land on prism_context_ablation_leaderboard (own board — do NOT reuse the main or
@@ -16,7 +16,7 @@
 
 experiment:
   name: masked_user
-  notes: "Act-context ablation, GRPO 19k: PRISM_EVAL_ACT_CONTEXT=masked_user (user turn hidden, system visible)"
+  notes: "Act-context ablation, released checkpoint: PRISM_EVAL_ACT_CONTEXT=masked_user (user turn hidden, system visible)"
   tags: [eval_suite_v2, grpo, act_context_ablation, ctx_masked_user]
   weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
 

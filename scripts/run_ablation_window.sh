@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Activation-window ablation: 7 sequential runs of the GRPO 19k checkpoint
+# Activation-window ablation: 7 sequential runs of the released checkpoint
 # with different activation windows, all landing on prism_window_ablation_leaderboard.
 #
 # The runner's window/generation params live in the checkpoint config, so

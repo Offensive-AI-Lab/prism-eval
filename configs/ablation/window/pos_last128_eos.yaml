@@ -6,11 +6,11 @@
 # long responses' tail = tokens 1000+). Complements the chunk table.
 # Env (set by launcher): PRISM_EVAL_ACT_WINDOW_POS=end
 #                        PRISM_EVAL_BASE_GEN_MAX_NEW_TOKENS=2048
-# Checkpoint = GRPO 19k (same as all window-ablation rows).
+# Checkpoint = released checkpoint (same as all window-ablation rows).
 
 experiment:
   name: pos_last128_eos
-  notes: "Window ablation, GRPO 19k: last 128 tokens of natural-EOS (2048-cap) response, all 1000 records, no support conditioning"
+  notes: "Window ablation, released checkpoint: last 128 tokens of natural-EOS (2048-cap) response, all 1000 records, no support conditioning"
   tags: [eval_suite_v2, grpo, window_ablation, pos_last_eos]
   weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
 

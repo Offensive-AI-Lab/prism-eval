@@ -6,8 +6,8 @@
 # scripts/run_ablation_context.sh (runner _cfg comes from the checkpoint,
 # so YAML can't carry it).
 #
-# This run: full — prompt + response visible (published behavior; baseline
-# row for this board). Checkpoint = GRPO 19k, published window (last 128 of
+# This run: full — prompt + response visible (reference behavior; baseline
+# row for this board). Checkpoint = released checkpoint, reference window (last 128 of
 # a 196-cap response).
 #
 # All 5 context conditions share evaluation_name=prism_context_ablation and
@@ -16,7 +16,7 @@
 
 experiment:
   name: full
-  notes: "Act-context ablation, GRPO 19k: PRISM_EVAL_ACT_CONTEXT=full (baseline row)"
+  notes: "Act-context ablation, released checkpoint: PRISM_EVAL_ACT_CONTEXT=full (baseline row)"
   tags: [eval_suite_v2, grpo, act_context_ablation, ctx_full]
   weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
 
@@ -26,7 +26,7 @@ suite:
 
 runner:
   type: prism
-  display_name: "context full (published)"
+  display_name: "context full (reference)"
   checkpoint: ${PRISM_EVAL_CHECKPOINT_DIR}/prism-qwen3.5-9b-grpo.pt
   device: cuda
 
