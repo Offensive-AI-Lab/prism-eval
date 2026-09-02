@@ -64,7 +64,7 @@ that file alone.
 ```bash
 python scripts/calibrate_follow.py \
     -i data/calibration/follow_snapshot.jsonl \
-    -o results/follow/calibration_v1.json
+    -o results/follow/calibration.json
 ```
 
 **Decision rule** (mirrors the adversarial flow): the judge↔human Cohen κ /
@@ -78,8 +78,8 @@ prompt-iteration signal — tune the FOLLOWED rules in `behavior_judge.py`'s
 - **Judge prompt version**: bumps when the FOLLOWED rules in
   `behavior_judge.py` `SYSTEM_PROMPT` change. If this label ever feeds a
   published leaderboard, follow `CONTRIBUTING.md` "Leaderboard bump policy".
-- **Annotation batch**: queue names (`follow_calibration` / `_v2` / …)
-  keep multiple annotation batches separate.
+- **Annotation batch**: one queue name per batch (the shipped snapshot's
+  is `follow_calibration`) keeps annotation rounds separate.
 
 ## Notes / scope
 

@@ -113,15 +113,15 @@ class EvalRecord(BaseModel):
 
     @model_validator(mode="after")
     def check_instructions_present(self) -> "EvalRecord":
-        has_v2 = self.instruction_sources is not None
-        has_v1 = self.constraints is not None
+        has_current = self.instruction_sources is not None
+        has_legacy = self.constraints is not None
 
-        if not has_v2 and not has_v1:
+        if not has_current and not has_legacy:
             raise ValueError(
                 "Either instruction_sources (current) or constraints (legacy) must be provided"
             )
 
-        if has_v2 and "original" not in self.instruction_sources:
+        if has_current and "original" not in self.instruction_sources:
             raise ValueError("instruction_sources must contain an 'original' key")
 
         return self

@@ -21,8 +21,8 @@ Writes a JSON report and prints a human-readable summary.
 
 Usage:
     python scripts/calibrate_advdet.py \\
-        -i results/advdet/snapshot_v1.jsonl \\
-        -o results/advdet/calibration_v1.json
+        -i results/advdet/snapshot.jsonl \\
+        -o results/advdet/calibration.json
 """
 
 from __future__ import annotations

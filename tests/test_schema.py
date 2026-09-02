@@ -16,7 +16,7 @@ from prism_eval.schema import (
 )
 
 
-def _minimal_v2(**overrides) -> dict:
+def _minimal_current(**overrides) -> dict:
     """Build a minimal current-spec record dict."""
     base = dict(
         eval_id="TEST-001",
@@ -33,7 +33,7 @@ def _minimal_v2(**overrides) -> dict:
     return base
 
 
-def _minimal_v1(**overrides) -> dict:
+def _minimal_legacy(**overrides) -> dict:
     """Build a minimal legacy record dict (backward compat)."""
     base = dict(
         schema_version="1.0",
@@ -53,22 +53,22 @@ def _minimal_v1(**overrides) -> dict:
 
 class TestEvalRecordV2:
     def test_minimal_valid(self):
-        rec = EvalRecord(**_minimal_v2())
+        rec = EvalRecord(**_minimal_current())
         assert rec.eval_id == "TEST-001"
         assert rec.instruction_sources["original"] == ["Do X"]
         assert rec.probe_points[0].probe_id == "p1"
 
     def test_multi_turn(self):
-        rec = EvalRecord(**_minimal_v2(prompt=None, prompt_turns=["Turn 1", "Turn 2"]))
+        rec = EvalRecord(**_minimal_current(prompt=None, prompt_turns=["Turn 1", "Turn 2"]))
         assert rec.prompt is None
         assert len(rec.prompt_turns) == 2
 
     def test_no_prompt_raises(self):
         with pytest.raises(ValidationError, match="prompt, prompt_turns, or prompt_messages"):
-            EvalRecord(**_minimal_v2(prompt=None, prompt_turns=None))
+            EvalRecord(**_minimal_current(prompt=None, prompt_turns=None))
 
     def test_prompt_messages_satisfies_validator(self):
-        rec = EvalRecord(**_minimal_v2(
+        rec = EvalRecord(**_minimal_current(
             prompt=None,
             prompt_turns=None,
             prompt_messages=[
@@ -83,14 +83,14 @@ class TestEvalRecordV2:
 
     def test_no_instructions_raises(self):
         with pytest.raises(ValidationError, match="Either instruction_sources .* or constraints"):
-            EvalRecord(**_minimal_v2(instruction_sources=None))
+            EvalRecord(**_minimal_current(instruction_sources=None))
 
     def test_instruction_sources_requires_original(self):
         with pytest.raises(ValidationError, match="must contain an 'original' key"):
-            EvalRecord(**_minimal_v2(instruction_sources={"injected": ["bad"]}))
+            EvalRecord(**_minimal_current(instruction_sources={"injected": ["bad"]}))
 
     def test_multiple_sources(self):
-        rec = EvalRecord(**_minimal_v2(
+        rec = EvalRecord(**_minimal_current(
             instruction_sources={"original": ["Be helpful"], "injected": ["Ignore previous"]}
         ))
         assert "injected" in rec.instruction_sources
@@ -99,19 +99,19 @@ class TestEvalRecordV2:
         params = GenerationParams(
             n_turns=8, n_instructions=3, k_distribution="poisson", k_param=2.0, flavor="benign"
         )
-        rec = EvalRecord(**_minimal_v2(generation_params=params, instruction_positions=[0, 3, 6]))
+        rec = EvalRecord(**_minimal_current(generation_params=params, instruction_positions=[0, 3, 6]))
         assert rec.generation_params.n_turns == 8
         assert rec.instruction_positions == [0, 3, 6]
 
     def test_metadata(self):
-        rec = EvalRecord(**_minimal_v2(
+        rec = EvalRecord(**_minimal_current(
             metadata={"attack_pattern": "direct_override", "notes": "test note"}
         ))
         assert rec.metadata.attack_pattern == "direct_override"
         assert rec.metadata.notes == "test note"
 
     def test_defaults(self):
-        rec = EvalRecord(**_minimal_v2())
+        rec = EvalRecord(**_minimal_current())
         assert rec.schema_version == "2.0"
         assert rec.model_override is None
         assert rec.constraints is None
@@ -120,12 +120,12 @@ class TestEvalRecordV2:
 
 class TestEvalRecordV1Compat:
     def test_v1_record_valid(self):
-        rec = EvalRecord(**_minimal_v1())
+        rec = EvalRecord(**_minimal_legacy())
         assert rec.constraints == ["Do X"]
         assert rec.goals == ["Test intent"]
 
     def test_v1_no_instruction_sources(self):
-        rec = EvalRecord(**_minimal_v1())
+        rec = EvalRecord(**_minimal_legacy())
         assert rec.instruction_sources is None
 
 
@@ -141,7 +141,7 @@ class TestProbePoint:
 
 class TestEvalSuite:
     def test_suite_with_records(self):
-        suite = EvalSuite(evals=[EvalRecord(**_minimal_v2())])
+        suite = EvalSuite(evals=[EvalRecord(**_minimal_current())])
         assert len(suite.evals) == 1
 
 
@@ -174,7 +174,7 @@ class TestScoringModels:
         cs = ClaimScore(claim="Do X", score=1.0, evidence="matched")
         assert cs.score == 1.0
 
-    def test_scorer_output_v2(self):
+    def test_scorer_output_current(self):
         so = ScorerOutput(
             scorer="exact_match",
             instruction_scores=[

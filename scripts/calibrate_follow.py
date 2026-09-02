@@ -28,8 +28,8 @@ reported side by side.
 
 Usage:
     python scripts/calibrate_follow.py \\
-        -i results/follow/snapshot_v1.jsonl \\
-        -o results/follow/calibration_v1.json
+        -i results/follow/snapshot.jsonl \\
+        -o results/follow/calibration.json
 """
 
 from __future__ import annotations

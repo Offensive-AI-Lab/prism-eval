@@ -26,7 +26,7 @@ def _so(scores: list[float], halluc_scores: list[float] | None = None) -> Scorer
     )
 
 
-def _so_v1(constraint_scores: list[float], goal_scores: list[float], hall: int = 0) -> ScorerOutput:
+def _so_legacy(constraint_scores: list[float], goal_scores: list[float], hall: int = 0) -> ScorerOutput:
     """Build a legacy-style ScorerOutput for backward compat tests."""
     return ScorerOutput(
         scorer="test",
@@ -61,7 +61,7 @@ class TestBasicMetrics:
 
     def test_v1_fallback(self):
         """instruction_recall falls back to legacy fields when instruction_scores is empty."""
-        so = _so_v1([1.0, 0.0], [0.5])
+        so = _so_legacy([1.0, 0.0], [0.5])
         assert instruction_recall(so) == 0.5  # mean of [1.0, 0.0, 0.5]
 
 
