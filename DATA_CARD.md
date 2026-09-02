@@ -110,7 +110,7 @@ The three judges have separate calibration sets:
 | File | Judge | Contents |
 |---|---|---|
 | `coverage_gold_v1.jsonl` | scoring | **93 reports / 373 gold labels** across three rounds. Each row: prompt, target-model response, ground-truth instructions, ITM report and bullets, the published judge's per-claim scores, the reconciled **gold** label, and both annotators' independent pre-reconciliation labels where they exist. |
-| `advdet_gold_v1.jsonl` | advdet | 50 reports with the reconciled gold set of adversarial bullet indices, plus the judge's picks. |
+| `advdet_gold_v1.jsonl` | advdet | 50 reports with the reconciled gold set of adversarial bullet indices, plus the judge's picks. Sampling strata: `configs/advdet_queue_spec_v1.json`. |
 | `coverage_calibration_v1.json` | scoring + advdet | The frozen agreement report computed from both. |
 | `follow_snapshot_v1.jsonl` | FOLLOWED | 184 (call, annotator) records; 92 calls double-annotated. Stratified over three agent-injection sources (bipia, injecagent, llmail) × followed/refused. |
 | `follow_calibration_v1.json` | FOLLOWED | The frozen agreement report computed from it. |

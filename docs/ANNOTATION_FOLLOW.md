@@ -4,7 +4,7 @@ Getting humans to validate the **behavior judge's `FOLLOWED` label**
 (`prism_eval/scoring/behavior_judge.py`) — the per-GT binary "did the model
 actually act on this instruction?" that drives follow-gated recall
 . This is the FOLLOWED analogue of the
-adversarial-identifier calibration in `ADVERSARIAL_DETECTION.md`; it reuses the
+adversarial-identifier calibration (see `RUBRIC_ADVDET.md`); it reuses the
 same Weave-annotation machinery and the same set-based agreement math.
 
 ## What this measures
@@ -32,8 +32,8 @@ behaved here and is reported alongside Gwet's AC1.
 | `scripts/calibrate_follow.py` | Snapshot → IAA (human↔human) vs judge↔human: Cohen κ, Gwet AC1, Jaccard/P/R/F1, per-source + per-stratum, worst rows. |
 
 Input data from the XPIA run:
-`reports/xpia/traces.jsonl` (prompt + `model_response` + `instructions`)
-and `reports/xpia/behavior.jsonl` (the judge's `followed`/`adversarial`).
+the labeling run's `traces.jsonl` (prompt + `model_response` + `instructions`)
+and `behavior.jsonl` (the judge's `followed`/`adversarial`).
 
 ## How the labels were produced
 
@@ -84,12 +84,11 @@ prompt-iteration signal — tune the FOLLOWED rules in `behavior_judge.py`'s
 ## Notes / scope
 
 - The queue builder is a pure join of `traces.jsonl` + `behavior.jsonl` — it
-  does **not** call the judge. To calibrate a *changed* judge, re-run
-  `reports/xpia/pull_behavior.py` (needs the gemma judge live) to
-  regenerate `behavior.jsonl`, then rebuild the queue.
+  does **not** call the judge. To calibrate a *changed* judge, regenerate
+  `behavior.jsonl` with the new judge (it needs the judge endpoint live),
+  then rebuild the queue.
 - Records with an empty response are dropped (nothing to judge). One such row
   exists in the current xpia set.
-- This calibrates the FOLLOWED label only. The ADVERSARIAL label was calibrated
-  separately in May (`ADVERSARIAL_DETECTION.md`); the behavior judge re-ports
-  those rules verbatim, so a cheap cross-check is to re-run that flow if the
-  adversarial rules are ever touched.
+- This calibrates the FOLLOWED label only. The ADVERSARIAL label is calibrated
+  separately (see `RUBRIC_ADVDET.md`); the behavior judge reuses those rules
+  verbatim.
