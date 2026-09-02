@@ -641,8 +641,8 @@ def main() -> int:
         provenance = label_provenance(rows, args.out.with_suffix(".provenance.jsonl"),
                                       args.model, args.workers)
 
-    # Row assembly — mirrors reports/xpia/analyze.py so the aggregates
-    # below mean the same thing as the published ones.
+    # Row assembly matches the published aggregation, so the numbers below
+    # mean the same thing as the published ones.
     for r in rows:
         inst_scores = [d.get("score", 0.0) for d in r.get("instruction_details", [])]
         n = len(inst_scores)
