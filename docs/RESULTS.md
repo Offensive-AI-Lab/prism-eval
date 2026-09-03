@@ -1,14 +1,12 @@
 # Published results
 
-These are the numbers from the paper — *PRISM: Recovering Instruction Sets from
-Language Model Activations* (EMNLP 2026 Main Conference; preprint [arXiv:2606.09563](https://arxiv.org/abs/2606.09563)),
-Table 1. Target model is **Qwen3.5-9B** throughout; activation-conditioned
-systems read layer-16 residual-stream activations from the final 128 generated
-response tokens.
+[PRISM](https://arxiv.org/abs/2606.09563), EMNLP 2026 Main Conference.
+The main PRISM rows use Qwen3.5-9B and layer-16 activations from up to the
+last 128 response tokens. Baseline target models are labelled in the table.
 
 ## Main results
 
-Values are split means; each row is one validation-selected checkpoint.
+Values are means over the 1,000-record suite, with 250 records per setting.
 **R** = Judge Reward (↑) · **Cvg** = Coverage Rate (↑) · **H** = Hallucination Rate (↓).
 
 | Method | BN R | BN Cvg | BN H | BC R | BC Cvg | BC H | HO R | HO Cvg | HO H | AP R | AP Cvg | AP H | **Avg R** | **Avg Cvg** | **Avg H** |
@@ -23,34 +21,13 @@ Values are split means; each row is one validation-selected checkpoint.
 
 BN = Benign · BC = Behavioral Constraints · HO = Hidden Objectives · AP = Adversarial Prompt.
 
-PRISM has the highest reward and coverage in each setting. Relative to PRISM
-without RL, AP coverage increases from 0.531 to 0.685 and AP hallucination
-decreases from 0.086 to 0.048. Several baselines have lower hallucination rates
-but also substantially lower coverage.
-
 Adversarial-instruction detection is 0.844 on HO and 0.676 on AP, for a mean of
 0.760 across the two adversarial settings.
 
-The GPT-5.5 text-only control sees the response but no hidden states. Its benign
-coverage is 0.919, while coverage is lower on the adversarial settings (0.461
-for HO and 0.536 for AP).
+## Upstream baselines
 
-## Mapping the paper's names onto this repo
-
-| Paper | This repo |
-|---|---|
-| PRISM | `configs/main/qwen3.5-9b-grpo.yaml`, `runner.type: prism` |
-| PRISM w/o RL | `configs/main/qwen3.5-9b-sft.yaml` |
-| GPT-5.5 (text only) | `configs/main/text_only_baseline.yaml` |
-| LatentQA, Activation Oracles | authors' own code and checkpoints — see below |
-| Judge Reward (R) | `reward` in `summary.json` |
-| Coverage Rate (Cvg) | `coverage` in `summary.json` |
-| Hallucination Rate (H) | `hallucination_rate` in `summary.json` |
-| target model | the model being monitored (`model_id` inside a checkpoint) |
-
-The two activation-to-text baselines in Table 1 were produced by running each
-method's own released code and checkpoints, unmodified, over this suite and
-scoring with the same `gemma-4-31B-it` judge. Neither is re-implemented here:
+LatentQA and Activation Oracles were evaluated using their upstream
+implementations and the same scoring judge:
 
 - **LatentQA** (Pan et al., 2024) — [aypan17/latentqa](https://github.com/aypan17/latentqa)
   @ `a2dcb6f`, decoder [`aypan17/latentqa_llama-3-8b-instruct`](https://huggingface.co/aypan17/latentqa_llama-3-8b-instruct)
@@ -61,28 +38,12 @@ scoring with the same `gemma-4-31B-it` judge. Neither is re-implemented here:
 
 Each was run against its own target model as labelled in the table above.
 
-## Reproducing a row
+## Reproduction
 
-The **PRISM** and **PRISM w/o RL** rows use the released GRPO and SFT
-checkpoints, respectively. The GRPO checkpoint is the default model for
-evaluation; use the SFT checkpoint only to isolate the effect of RL.
-
-```bash
-python scripts/download_weights.py --only prism-qwen3.5-9b-grpo
-export PRISM_EVAL_CHECKPOINT_DIR=./checkpoints
-cp .env.example .env                             # judge endpoint
-prism-eval evaluate --config configs/main/qwen3.5-9b-grpo.yaml --offline
-```
-
-A repeated `qwen3.5-9b-grpo` run should be close to, but may not exactly match,
-the PRISM row. Generation is greedy in the released evaluator, but GPU kernels
-can affect borderline tokens and judge calls can vary. See
-[REPRODUCING.md](REPRODUCING.md) for expected sources of variation.
-
-Two rows in this repo have no counterpart in the paper at all —
-`configs/main/gemma-2-9b-it-grpo.yaml` and `configs/main/ministral-3-8b-grpo.yaml` apply the same
-method to Gemma-2-9B and Ministral-3-8B target models. They exist to show the
-approach transfers; there are no published numbers to compare them against.
+The PRISM and PRISM w/o RL rows use the released GRPO and SFT checkpoints.
+[The reproduction guide](REPRODUCING.md) lists configurations, commands, and
+expected run-to-run variation. Gemma and Ministral transfer configurations are
+also available; no reference scores for them are tabulated here.
 
 ## Indirect prompt injection (XPIA)
 

@@ -1,8 +1,5 @@
 # Contributing to PRISM-eval
 
-This guide covers extensions to the evaluation harness. For the benchmark
-definition and released configurations, start with the [README](README.md).
-
 ## Development setup
 
 ```bash
@@ -10,96 +7,53 @@ uv sync --extra dev
 uv run pytest tests -q
 ```
 
-Unit tests must not require model checkpoints, GPU access, credentials, or live
-API endpoints. Document hardware-dependent reproduction commands in
-[docs/REPRODUCING.md](docs/REPRODUCING.md).
+Default tests must not require checkpoints, GPU access, credentials, or live
+endpoints. Put hardware-dependent instructions in
+[the reproduction guide](docs/REPRODUCING.md).
 
 ## Add a runner
 
-A runner implements the protocol in `prism_eval/runner.py`:
+Implement the `setup` and `run_eval` methods in the
+[`ITMRunner` protocol](prism_eval/runner.py). Then:
 
-```python
-class ITMRunner(Protocol):
-    def setup(self, checkpoint_path: str, device: str = "cuda") -> None: ...
-    def run_eval(self, eval_record: EvalRecord) -> EvalResult: ...
-```
-
-To add one:
-
-1. Create `prism_eval/runners/<name>.py`.
-2. Register the runner in `RUNNER_TYPES` and `build_runner` in
+1. Add the implementation under `prism_eval/runners/`.
+2. Register it in `RUNNER_TYPES` and `build_runner` in
    `prism_eval/runners/__init__.py`.
-3. Add its name to `RunnerConfig.type` in `prism_eval/config.py`.
-4. Add a configuration under `configs/`.
-5. Add tests for setup, single-record inference, and configuration validation.
+3. Extend `RunnerConfig.type` in `prism_eval/config.py`.
+4. Add a configuration and tests using mocks for model loading and inference.
 
-Implement `run_batch(records) -> list[EvalResult]` when the model supports
-batched inference. It must preserve input order and return results equivalent to
-repeated `run_eval` calls.
-
-A runner without a checkpoint must encode all behavior-changing parameters in
-`RunnerConfig.identity()`. This keeps distinct systems from sharing a result or
-leaderboard identity.
+Optional `run_batch(records)` must preserve input order and match repeated
+`run_eval` calls. For checkpoint-free runners, include all behavior-changing
+parameters in `RunnerConfig.identity()`.
 
 ## Add a scorer
 
-The end-to-end evaluator uses `weave.Scorer` subclasses in
-`prism_eval/weave_eval.py`. A scorer declares the dataset fields it consumes in
-its `score` signature and returns a dictionary of per-record values:
+The evaluator uses `weave.Scorer` subclasses in `prism_eval/weave_eval.py`.
+Implement `score` for per-record values and `summarize` for aggregation.
+Register the scorer in `prism_eval/cli.py` and add its settings to
+`ScoringConfig`; add leaderboard columns to `DEFAULT_LEADERBOARD_METRICS`
+if needed.
 
-```python
-class MyScorer(weave.Scorer):
-    @weave.op()
-    def score(self, instructions: list[str], output: dict) -> dict:
-        return {"my_metric": ...}
+Every scorer must accept `output`. Adversarial detection must run after
+`JudgeLLMScorer` with the same judge identity because it reuses the coverage
+scores. Offline and Weave evaluation must share scorer and aggregation logic.
 
-    def summarize(self, score_rows: list[dict]) -> dict:
-        return {"my_metric": ...}
-```
+## Data and evaluation conditions
 
-Register the scorer in the `evaluate` command in `prism_eval/cli.py`, add a
-field to `ScoringConfig`, and expose any leaderboard columns in
-`DEFAULT_LEADERBOARD_METRICS`.
+Use the schema in [`prism_eval/schema.py`](prism_eval/schema.py). Ground-truth
+instructions belong in `instruction_sources["original"]`, one directive per
+item.
 
-All scorers must accept `output`, even when they do not use it. Scorer ordering
-is also significant: `AdversarialDetectionScorer` consumes cached per-claim
-scores from `JudgeLLMScorer`, so it must run after that scorer with the same
-judge identity.
+Keep `data/eval_suite.json` unchanged for paper reproduction. Add a separate
+suite and configuration for new records, and document their sources, licenses,
+construction, and selection criteria in [the data card](DATA_CARD.md).
 
-The offline and Weave paths must use the same scorer implementation and
-aggregation logic.
-
-## Add evaluation records
-
-The schema is defined by `EvalSuite` and `EvalRecord` in
-`prism_eval/schema.py`. Ground-truth instructions belong in
-`instruction_sources["original"]` and should be phrased as individual
-directives.
-
-Do not modify `data/eval_suite.json` in place. It is the artifact used
-for the published results. Add a new versioned suite and configuration instead.
-
-For adversarial settings, retain a record only after verifying that the target
-behavior occurred. Include a benign comparison arm when reporting detection or
-false-positive metrics. Record the source, license, construction process, and
-known selection effects in [DATA_CARD.md](DATA_CARD.md).
-
-## Preserve comparability
-
-Two runs are comparable only when all of the following match:
-
-- suite contents and filters
-- scorer set and scorer configuration
-- `evaluation.evaluation_name`
-- judge identity for judge-scored metrics
-
-Changing the suite, judge prompt, judge model, reward formula, or scorer set
-defines a new evaluation condition. Use a new explicit `evaluation_name` and
-leaderboard name, and document the difference.
+Keep suite filters and scoring rules fixed when comparing systems. Changes to
+the suite, judge model or prompt, reward, or scorer set need a new evaluation
+name and a description of the changed condition.
 
 ## Pull requests
 
-Keep changes focused and avoid committing generated results, checkpoints,
-credentials, or local paths. Update the README, data card, rubric, or
-reproduction guide whenever a user-visible interface or evaluation condition
-changes.
+Keep changes focused, test changed logic, and update the affected documentation.
+Do not commit generated results, checkpoints, credentials, or machine-specific
+paths.

@@ -1,121 +1,79 @@
 # Reproducing the results
 
-This guide maps the released configurations to runnable commands. Reference
-values are reported in [RESULTS.md](RESULTS.md).
+Complete the [quickstart](../README.md#quick-start) to install the environment,
+download the main checkpoint, and configure the judge. The target model and
+PRISM checkpoint run on your CUDA GPU; the judge can run on a separate host.
+Paper scoring uses `google/gemma-4-31B-it` with reasoning disabled.
 
-## Prerequisites
+## Configurations
 
-Install the locked environment and download the checkpoint for the main result:
+Download the other checkpoints with `uv run python scripts/download_weights.py`.
+Then select a configuration:
 
-```bash
-uv sync --extra dev
-uv run python scripts/download_weights.py --only prism-qwen3.5-9b-grpo
-cp .env.example .env
-```
+| System | Configuration |
+|---|---|
+| PRISM, Qwen3.5-9B | [qwen3.5-9b-grpo.yaml](../configs/main/qwen3.5-9b-grpo.yaml) |
+| PRISM without RL, Qwen3.5-9B | [qwen3.5-9b-sft.yaml](../configs/main/qwen3.5-9b-sft.yaml) |
+| Text-only control | [text_only_baseline.yaml](../configs/main/text_only_baseline.yaml) |
+| PRISM, Gemma-2-9B-it | [gemma-2-9b-it-grpo.yaml](../configs/main/gemma-2-9b-it-grpo.yaml) |
+| PRISM, Ministral-3-8B | [ministral-3-8b-grpo.yaml](../configs/main/ministral-3-8b-grpo.yaml) |
 
-The target model is downloaded from Hugging Face on first use. Configure
-`HF_HUB_CACHE` when model weights should be shared across runs or users. Set
-`HF_TOKEN` for gated models.
-
-The published metrics require an OpenAI-compatible judge endpoint. The paper
-used `google/gemma-4-31B-it` with reasoning disabled. Start the supplied vLLM
-server or point the environment variables at another endpoint:
-
-```bash
-scripts/serve_judge.sh
-```
-
-```dotenv
-PRISM_EVAL_CHECKPOINT_DIR=./checkpoints
-PRISM_EVAL_MODEL=gemma4-31B-it
-PRISM_EVAL_BASE_URL=http://localhost:8088/v1
-PRISM_EVAL_API_KEY=EMPTY
-```
-
-Changing the judge changes the evaluation condition. The judge model is part of
-the scorer identity so that differently scored runs do not share a leaderboard
-row.
-
-## Main configurations
-
-Download all four released checkpoints before running every PRISM row:
+For example, evaluate the model without RL:
 
 ```bash
-uv run python scripts/download_weights.py
-```
-
-Then execute the configurations of interest:
-
-```bash
-# Qwen 3.5 9B target model
-uv run prism-eval evaluate --config configs/main/qwen3.5-9b-grpo.yaml --offline
 uv run prism-eval evaluate --config configs/main/qwen3.5-9b-sft.yaml --offline
-uv run prism-eval evaluate --config configs/main/text_only_baseline.yaml --offline
-
-# Transfer configurations
-uv run prism-eval evaluate --config configs/main/gemma-2-9b-it-grpo.yaml --offline
-uv run prism-eval evaluate --config configs/main/ministral-3-8b-grpo.yaml --offline
 ```
 
-The comparison between `qwen3.5-9b-grpo` and `qwen3.5-9b-sft` isolates the
-GRPO stage: the architecture, target model, hook layer, and activation window
-are the same. The Gemma and Ministral configurations change the target model and
-use hook layers stored in their checkpoints.
+The text-only control generates a Qwen response locally, then sends its last
+128 tokens to `runner.baseline_llm`. This is a separate call from judge scoring
+and requires the provider credentials specified in its configuration.
+Set `HF_TOKEN` for gated target models.
 
-The text-only control uses the final 128 response tokens and does not read
-activations. Its `baseline_llm` call requires the provider credentials specified
-by the configuration and environment.
+LatentQA and Activation Oracles use upstream implementations rather than this
+repository's runners. Their revisions and checkpoint links are in
+[Results](RESULTS.md#upstream-baselines).
 
-LatentQA and Activation Oracles were evaluated through their upstream code and
-are not implemented in this repository. Commit and checkpoint references are in
-[RESULTS.md](RESULTS.md).
+## Outputs and comparison
 
-## Outputs
-
-With `--offline`, each run writes:
-
-```text
-results/<experiment>/rows.jsonl
-results/<experiment>/summary.json
-```
-
-The paper's main fields are under `summary.JudgeLLMScorer`:
+Each run writes `rows.jsonl` and `summary.json` under
+`results/<experiment.name>/`. In `summary.json`, the paper metrics are:
 
 | Field | Meaning |
 |---|---|
-| `reward` | Coverage adjusted by hallucination and report length |
-| `coverage` | Mean ground-truth instruction coverage |
-| `hallucination_rate` | Mean fraction of unsupported report claims |
-| `AP.*`, `HO.*`, `BC.*`, `BN.*` | The same metrics by setting |
+| `summary.JudgeLLMScorer.reward` | Coverage adjusted for hallucination and report length |
+| `summary.JudgeLLMScorer.coverage` | Mean ground-truth instruction coverage |
+| `summary.JudgeLLMScorer.hallucination_rate` | Mean unsupported-claim score |
+| `summary.AdversarialDetectionScorer.detect_rate_avg` | Mean coverage of adversarial instructions on AP and HO |
 
-The paper's adversarial-detection metric is
-`summary.AdversarialDetectionScorer.detect_rate_avg`, computed on AP and HO.
+The scorer summaries also contain per-setting aggregates. Compare them with the
+[reference results](RESULTS.md). Use the canonical `data/eval_suite.json`;
+regenerating a suite or changing the judge defines a different evaluation.
 
-To trace through Weave, set `experiment.weave_project`, set `WANDB_API_KEY`,
-and omit `--offline`. The local and Weave paths use the same runner, scorers,
-and aggregation functions.
+Generation is greedy, but GPU kernels and low-precision arithmetic can affect
+borderline tokens; repeated judge calls can also vary. For a substantial
+difference, compare the checkpoint, suite, judge, scorer settings, target-model
+revision, and generation overrides.
+
+`--offline` disables Weave tracing and leaderboard publication, not judge
+calls. To enable tracing, set `experiment.weave_project` and `WANDB_API_KEY`,
+then omit the flag.
 
 ## Runtime and memory
 
-A full main-suite run processes 1,000 records. On one RTX PRO 6000 with a
-co-located judge, a PRISM run took approximately 20 minutes: about 18 minutes
-for inference and 2 minutes for scoring. These figures are reference
-measurements, not guarantees.
+A reference 1,000-record run on an RTX PRO 6000 with a co-located judge took
+about 20 minutes: 18 for inference and 2 for scoring. Runtime depends on the
+target model, batching, and judge endpoint.
 
-The principal tuning fields are:
-
-- `annotation.batch_size` for GPU inference
-- `annotation.trace_workers` for concurrent judge calls
-- `runner.device` for device placement
-
-Lower `batch_size` after an out-of-memory error. Lower `trace_workers` when a
-hosted judge enforces rate limits. Scorers within a record remain ordered
-because adversarial detection depends on the coverage judge's per-claim output.
+Reduce `annotation.batch_size` after a GPU out-of-memory error. Use
+`runner.device` to select the inference GPU and `annotation.trace_workers`
+to control concurrent judge calls.
 
 ## Ablations
 
-The activation ablations use the Qwen GRPO checkpoint and alter only the
-activation read:
+The drivers vary the activation read while keeping the PRISM checkpoint fixed.
+If the judge is remote, export `PRISM_EVAL_BASE_URL`, `PRISM_EVAL_MODEL`, and
+`PRISM_EVAL_API_KEY` before launching them: these shell scripts set defaults
+before the CLI reads `.env`.
 
 ```bash
 scripts/run_ablation_window.sh
@@ -124,49 +82,22 @@ scripts/run_ablation_window_chunks_deep.sh
 scripts/run_ablation_context.sh
 ```
 
-Window and context settings are supplied through environment variables listed
-in `configs/template.yaml`. Chunk-position runs can reuse generated responses
-through `PRISM_EVAL_BASE_RESPONSE_CACHE`; use
-`scripts/prefill_response_cache.py --help` to construct that cache. The
-`swapped` context condition additionally requires donor pairs from
-`scripts/make_act_swap_pairs.py`.
+The drivers include configurations beyond those tabulated in
+[the ablation report](ABLATION_REPORT.md). Set
+`PRISM_EVAL_BASE_RESPONSE_CACHE` to reuse generated responses across compatible
+runs. The context driver generates donor pairs for its `swapped` condition.
 
-Definitions, support counts, and results are in
-[ABLATION_REPORT.md](ABLATION_REPORT.md).
-
-## Expected sources of variation
-
-- Base-model and report generation are greedy in the released evaluator, but
-  GPU architecture, attention kernels, and low-precision arithmetic can change
-  borderline tokens.
-- The LLM judge can vary across repeated calls. Small changes in aggregate
-  coverage and hallucination are expected even with the same endpoint.
-- A different judge model or prompt is a different evaluation condition and may
-  produce a larger shift.
-- `scripts/build_suite.py` does not regenerate the canonical suite exactly. AP
-  and HO generation is sampled, and the generator revision is not pinned. Use
-  `data/eval_suite.json` when comparing with the paper.
-
-## Compare with the reference values
-
-Inspect the main aggregate with:
-
-```bash
-uv run python -c "import json; p='results/qwen3.5-9b-grpo/summary.json'; d=json.load(open(p)); print(json.dumps(d['summary']['JudgeLLMScorer'], indent=2))"
-```
-
-If a result differs materially from [RESULTS.md](RESULTS.md), first compare the
-checkpoint digest, suite record count, judge model, enabled scorer set, target
-model revision, and generation overrides. These fields account for the main
-differences between otherwise similar runs.
+[configs/template.yaml](../configs/template.yaml) describes window and context
+overrides for individual runs. `scripts/prefill_response_cache.py --help`
+describes cache construction from existing Weave traces.
 
 ## Optional installation check
 
-To check model loading, activation extraction, and report generation without a
-judge endpoint, use the eight-record configuration:
+To check model loading, activation extraction, and report generation without
+a judge:
 
 ```bash
 uv run prism-eval evaluate --config configs/smoke.yaml --offline
 ```
 
-This does not compute the paper metrics and is not required before evaluation.
+This eight-record check does not compute the paper metrics.
