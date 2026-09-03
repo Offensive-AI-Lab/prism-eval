@@ -24,12 +24,12 @@ logs/
 # Regenerable suite-build intermediates (scripts/build_suite.py --*-progress)
 data/external/
 
-# XPIA: the full 25k suite and its pipeline intermediates are large and
-# regenerable with scripts/build_suite.py and scripts/analyze_xpia.py. The
-# smoke suite, scripts and configs are committed.
+# The full indirect prompt injection suite and its build intermediates are
+# regenerable with scripts/fetch_xpia_evals.py. The smoke suite, scripts,
+# and configs are committed.
 data/eval_suite_xpia.json
 data/xpia_progress.jsonl
-# Large pipeline intermediates, but the XPIA source corpus IS shipped.
+# Ignore large intermediates; retain the indirect prompt injection source corpus.
 *.parquet
 !data/xpia_corpus.parquet
 

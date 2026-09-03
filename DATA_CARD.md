@@ -119,7 +119,7 @@ Calibration labels are project-authored; the underlying prompts retain their
 source terms. FOLLOWED records derive from BIPIA, InjecAgent, and LLMail.
 Coverage records derive from UltraChat, IF Multi-Constraints, and IFEval.
 
-## XPIA corpus (indirect prompt injection)
+## Indirect prompt injection benchmarks
 
 This corpus covers indirect prompt injection against tool-using agents. The
 attack appears in a tool result, email, or retrieved document rather than in the

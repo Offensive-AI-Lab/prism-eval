@@ -44,7 +44,7 @@ The PRISM and PRISM w/o RL rows use the released GRPO and SFT checkpoints.
 [The reproduction guide](REPRODUCING.md) lists configurations, commands, and
 output metrics.
 
-## Indirect prompt injection (XPIA)
+## Indirect prompt injection benchmarks
 
 A second domain, not part of the paper's Table 1: 24,953 successfully evaluated
 indirect-injection records built from BIPIA, LLMail, and InjecAgent (see

@@ -90,7 +90,8 @@ evaluation ID.
 See the [data card](DATA_CARD.md) for the schema, sources, and construction
 process, and [License](#license) for usage restrictions.
 
-The separate XPIA corpus remains under provenance and redistribution review.
+The indirect prompt injection corpus remains under provenance and
+redistribution review.
 Do not redistribute `data/xpia_corpus.parquet` until that review is complete.
 
 ## Metrics
