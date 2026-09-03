@@ -36,18 +36,6 @@ Changing the judge changes the evaluation condition. The judge model is part of
 the scorer identity so that differently scored runs do not share a leaderboard
 row.
 
-## Smoke run
-
-Use the included eight-record configuration before a full evaluation:
-
-```bash
-uv run prism-eval evaluate --config configs/smoke.yaml --offline
-```
-
-This command loads the Qwen checkpoint, generates responses, extracts
-activations, decodes reports, and writes local output. Judge scoring and Weave
-are disabled.
-
 ## Main configurations
 
 Download all four released checkpoints before running every PRISM row:
@@ -98,11 +86,10 @@ The paper's main fields are under `summary.JudgeLLMScorer`:
 | `reward` | Coverage adjusted by hallucination and report length |
 | `coverage` | Mean ground-truth instruction coverage |
 | `hallucination_rate` | Mean fraction of unsupported report claims |
-| `length_penalty` | Mean penalty for excess report claims |
 | `AP.*`, `HO.*`, `BC.*`, `BN.*` | The same metrics by setting |
 
-`summary.AdversarialDetectionScorer` contains `detect_rate_any`,
-`detect_rate_avg`, and `detect_rate_all` for AP and HO records.
+The paper's adversarial-detection metric is
+`summary.AdversarialDetectionScorer.detect_rate_avg`, computed on AP and HO.
 
 To trace through Weave, set `experiment.weave_project`, set `WANDB_API_KEY`,
 and omit `--offline`. The local and Weave paths use the same runner, scorers,
@@ -172,3 +159,14 @@ If a result differs materially from [RESULTS.md](RESULTS.md), first compare the
 checkpoint digest, suite record count, judge model, enabled scorer set, target
 model revision, and generation overrides. These fields account for the main
 differences between otherwise similar runs.
+
+## Optional installation check
+
+To check model loading, activation extraction, and report generation without a
+judge endpoint, use the eight-record configuration:
+
+```bash
+uv run prism-eval evaluate --config configs/smoke.yaml --offline
+```
+
+This does not compute the paper metrics and is not required before evaluation.

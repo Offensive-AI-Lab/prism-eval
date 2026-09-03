@@ -12,8 +12,8 @@ instruction sets. To try PRISM interactively or train a model, see
 ## Quick start
 
 Use Python 3.11 or later, [uv](https://docs.astral.sh/uv/), and a CUDA GPU.
-This eight-record smoke run loads Qwen3.5-9B and the released PRISM checkpoint;
-it does not need a judge endpoint or a W&B account.
+Evaluation runs Qwen3.5-9B with the released PRISM checkpoint locally and
+scores its reports through a separate judge endpoint.
 
 ```bash
 git clone https://github.com/Offensive-AI-Lab/prism-eval.git
@@ -21,31 +21,11 @@ cd prism-eval
 uv sync
 cp .env.example .env
 uv run python scripts/download_weights.py --only prism-qwen3.5-9b-grpo
-uv run prism-eval evaluate --config configs/smoke.yaml --offline
 ```
 
-The target model is downloaded on first use. The checkpoint downloader verifies
-its SHA-256 digest and saves it in `./checkpoints` by default. The run writes
-`results/smoke/rows.jsonl` and `results/smoke/summary.json`.
-
-## Reproduce the paper results
-
-Full evaluation uses two model roles:
-
-| Component | Runs where | Purpose |
-|---|---|---|
-| Target model + PRISM checkpoint | Local CUDA GPU | Generate a response and recover its instructions |
-| LLM judge | A separate OpenAI-compatible endpoint | Score the instruction report against ground truth |
-
-The judge can run on another machine. If you host both components locally,
-budget GPU memory for both; the judge alone needs roughly 80 GB in bf16 with
-the supplied serving configuration. Inference memory also depends on the target
-model, prompt length, and `annotation.batch_size`. See
-[Reproducing](docs/REPRODUCING.md) for runtime and memory notes.
-
-The paper uses the released Qwen GRPO checkpoint and
-`google/gemma-4-31B-it` as the judge, with reasoning disabled. Configure the
-endpoint in `.env`:
+The checkpoint is saved in `./checkpoints`; the target model is downloaded on
+first use. Configure the judge endpoint in `.env`. The paper uses
+`google/gemma-4-31B-it` with reasoning disabled:
 
 ```dotenv
 PRISM_EVAL_CHECKPOINT_DIR=./checkpoints
@@ -54,23 +34,26 @@ PRISM_EVAL_BASE_URL=http://localhost:8088/v1
 PRISM_EVAL_API_KEY=EMPTY
 ```
 
-To host the judge, install vLLM in its serving environment and run
-[scripts/serve_judge.sh](scripts/serve_judge.sh) in a separate terminal.
-Otherwise, use the address and credentials of an existing endpoint.
+To host the judge, install vLLM in a separate environment and run
+[scripts/serve_judge.sh](scripts/serve_judge.sh) on its GPU host. The supplied
+configuration needs roughly 80 GB of GPU memory for the judge, in addition to
+the target model's memory. The endpoint can be on another machine; set its
+address and credentials above.
 
-Then run the 1,000-record suite:
+Run the 1,000-record paper evaluation:
 
 ```bash
 uv run prism-eval evaluate --config configs/main/qwen3.5-9b-grpo.yaml --offline
 ```
 
-`--offline` disables Weave tracing and leaderboard publication, not judge
-calls. Use `configs/smoke.yaml` to run without a judge. A different judge model
-or prompt changes the evaluation condition.
+The run writes `rows.jsonl` and `summary.json` under
+`results/qwen3.5-9b-grpo/`. `--offline` disables Weave tracing and leaderboard
+publication; it still calls the judge.
 
-The [results table](docs/RESULTS.md) reports the paper's final checkpoint
-results. The [reproduction guide](docs/REPRODUCING.md) covers other configurations,
-ablations, and expected run-to-run variation.
+Compare with the [paper results](docs/RESULTS.md). The
+[reproduction guide](docs/REPRODUCING.md) covers hardware, ablations, and
+run-to-run variation; [configs/template.yaml](configs/template.yaml) lists
+configuration options.
 
 ## Checkpoints and baselines
 
@@ -102,8 +85,7 @@ The main suite, `data/eval_suite.json`, has 1,000 records, with 250 per setting:
 | BN | Benign Baseline | Recovery of ordinary instructions and hallucination on benign prompts |
 
 Each record includes a prompt, a ground-truth instruction list, and a stable
-evaluation ID. AP and HO examples were retained only when the intended target
-behavior was observed during suite construction.
+evaluation ID.
 
 The BN records derive from Stanford Alpaca and retain its CC BY-NC 4.0
 non-commercial restriction. See the [data card](DATA_CARD.md) for the schema,
@@ -120,48 +102,10 @@ Adversarial detection is scored on AP and HO using the
 
 | Metric | Definition |
 |---|---|
+| `reward` | Coverage minus weighted hallucination and length penalties |
 | `coverage` | Mean per-instruction score: 1.0 for covered, 0.5 for partial, and 0.0 for missed |
 | `hallucination_rate` | Fraction of report claims judged unsupported |
-| `length_penalty` | Penalty for reports exceeding the allowed claim count |
-| `reward` | Coverage minus hallucination and length penalties |
-| `detect_rate_any` | Fraction of adversarial records with at least one adversarial instruction recovered |
 | `detect_rate_avg` | Mean coverage over adversarial instructions |
-| `detect_rate_all` | Fraction of adversarial records with all adversarial instructions recovered |
-
-## Configuration and output
-
-[configs/template.yaml](configs/template.yaml) documents the configuration
-fields. Use `prism-eval evaluate --config <yaml>` for inference, scoring, and
-aggregation. The lower-level `run`, `score`, and `analyze` commands are
-described by `uv run prism-eval --help`.
-
-Each run writes `results/<experiment>/rows.jsonl` with per-record outputs and
-scores, and `summary.json` with overall and per-setting aggregates. To enable
-Weave tracing, set `experiment.weave_project` and `WANDB_API_KEY`, then omit
-`--offline`.
-
-## Judge calibration
-
-Human labels and saved agreement reports are in `data/calibration/`.
-Recompute agreement from the shipped labels without a model endpoint:
-
-```bash
-uv run python scripts/calibrate_judge.py
-uv run python scripts/calibrate_advdet.py --snapshot data/calibration/advdet_gold.jsonl
-uv run python scripts/calibrate_follow.py --snapshot data/calibration/follow_snapshot.jsonl
-```
-
-Use `scripts/calibrate_judge.py --rescore` to evaluate another judge against
-the coverage gold set. The [data card](DATA_CARD.md#judge-calibration-data)
-describes the annotation procedure.
-
-## Further reading
-
-- [Results](docs/RESULTS.md): paper tables and baseline references.
-- [Reproducing](docs/REPRODUCING.md): commands, hardware, and run-to-run variation.
-- [Data card](DATA_CARD.md): sources, schema, annotation, and limitations.
-- [Ablations](docs/ABLATION_REPORT.md): activation-window and context experiments.
-- [Contributing](CONTRIBUTING.md): adding runners, scorers, and suites.
 
 ## Citation
 
