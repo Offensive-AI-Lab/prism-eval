@@ -42,8 +42,7 @@ Each was run against its own target model as labelled in the table above.
 
 The PRISM and PRISM w/o RL rows use the released GRPO and SFT checkpoints.
 [The reproduction guide](REPRODUCING.md) lists configurations, commands, and
-expected run-to-run variation. Gemma and Ministral transfer configurations are
-also available; no reference scores for them are tabulated here.
+output metrics.
 
 ## Indirect prompt injection (XPIA)
 
@@ -84,8 +83,8 @@ but not followed:
   response), against 3.1% pure behaviour description and 7.6% fabrication.
 
 The first three bullets come from the calibrated FOLLOWED judge
-(`prism_eval/scoring/behavior_judge.py`, judge-vs-human κ = 0.734 against a
-human ceiling of 0.786 — see [../DATA_CARD.md](../DATA_CARD.md)). The
+(`prism_eval/scoring/behavior_judge.py`, judge-vs-human κ = 0.734 and
+human-vs-human κ = 0.786 — see [../DATA_CARD.md](../DATA_CARD.md)). The
 claim-side split comes from `prism_eval/scoring/claim_provenance.py`, which has
 no gold set of its own and should be read as indicative.
 
@@ -99,26 +98,5 @@ Where the signal lives in the activation window:
 
 ## Judge calibration
 
-The scoring judge was calibrated against a **reconciled gold set** before use
-(paper §G, Table 4): two annotators scored each claim independently, then
-resolved every disagreement together. κ is quadratic-weighted on the ordinal
-missed/partial/covered scale.
-
-Pilot round — 49 reports / 170 gold labels, the one the paper reports:
-
-| Comparison | κ (weighted) | Gwet's AC2 |
-|---|---|---|
-| **Judge vs gold** | **0.817** | 0.930 |
-| Human A vs Human B (pre-reconciliation) | 0.823 | 0.939 |
-
-The calibration gate was κ ≥ 0.70. Read the judge against the human row, not
-against 1.0.
-
-```bash
-python scripts/calibrate_judge.py                 # compute agreement from the shipped labels
-python scripts/calibrate_judge.py --rescore       # score your own judge
-```
-
-See [DATA_CARD.md](../DATA_CARD.md), which also covers the
-adversarial-detection gold set (judge matches gold 49/50) and the FOLLOWED
-judge.
+Calibration methods, results, and commands are in the
+[data card](../DATA_CARD.md#judge-calibration-data).

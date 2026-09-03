@@ -57,12 +57,12 @@ configuration options.
 
 ## Checkpoints and baselines
 
-| Checkpoint | Target model | Hook layer | Configuration |
-|---|---|---:|---|
-| [PRISM — Qwen](https://huggingface.co/Offensive-AI-Lab/prism-qwen3.5-9b-grpo) | `Qwen/Qwen3.5-9B` | 16 | [qwen3.5-9b-grpo.yaml](configs/main/qwen3.5-9b-grpo.yaml) |
-| [PRISM w/o RL — Qwen](https://huggingface.co/Offensive-AI-Lab/prism-qwen3.5-9b-sft) | `Qwen/Qwen3.5-9B` | 16 | [qwen3.5-9b-sft.yaml](configs/main/qwen3.5-9b-sft.yaml) |
-| [PRISM — Gemma](https://huggingface.co/Offensive-AI-Lab/prism-gemma-2-9b-it-grpo) | `google/gemma-2-9b-it` | 21 | [gemma-2-9b-it-grpo.yaml](configs/main/gemma-2-9b-it-grpo.yaml) |
-| [PRISM — Ministral](https://huggingface.co/Offensive-AI-Lab/prism-ministral-3-8b-grpo) | `mistralai/Ministral-3-8B-Instruct-2512-BF16` | 17 | [ministral-3-8b-grpo.yaml](configs/main/ministral-3-8b-grpo.yaml) |
+| Checkpoint | Target model | Configuration |
+|---|---|---|
+| [PRISM — Qwen](https://huggingface.co/Offensive-AI-Lab/prism-qwen3.5-9b-grpo) | `Qwen/Qwen3.5-9B` | [qwen3.5-9b-grpo.yaml](configs/main/qwen3.5-9b-grpo.yaml) |
+| [PRISM w/o RL — Qwen](https://huggingface.co/Offensive-AI-Lab/prism-qwen3.5-9b-sft) | `Qwen/Qwen3.5-9B` | [qwen3.5-9b-sft.yaml](configs/main/qwen3.5-9b-sft.yaml) |
+| [PRISM — Gemma](https://huggingface.co/Offensive-AI-Lab/prism-gemma-2-9b-it-grpo) | `google/gemma-2-9b-it` | [gemma-2-9b-it-grpo.yaml](configs/main/gemma-2-9b-it-grpo.yaml) |
+| [PRISM — Ministral](https://huggingface.co/Offensive-AI-Lab/prism-ministral-3-8b-grpo) | `mistralai/Ministral-3-8B-Instruct-2512-BF16` | [ministral-3-8b-grpo.yaml](configs/main/ministral-3-8b-grpo.yaml) |
 
 Omit `--only` from the download command to fetch all four checkpoints. Target
 model weights are downloaded separately; set `HF_TOKEN` for gated models.
@@ -87,9 +87,8 @@ The main suite, `data/eval_suite.json`, has 1,000 records, with 250 per setting:
 Each record includes a prompt, a ground-truth instruction list, and a stable
 evaluation ID.
 
-The BN records derive from Stanford Alpaca and retain its CC BY-NC 4.0
-non-commercial restriction. See the [data card](DATA_CARD.md) for the schema,
-source licenses, and construction process.
+See the [data card](DATA_CARD.md) for the schema, sources, and construction
+process, and [License](#license) for usage restrictions.
 
 The separate XPIA corpus remains under provenance and redistribution review.
 Do not redistribute `data/xpia_corpus.parquet` until that review is complete.
@@ -104,8 +103,8 @@ Adversarial detection is scored on AP and HO using the
 |---|---|
 | `reward` | Coverage minus weighted hallucination and length penalties |
 | `coverage` | Mean per-instruction score: 1.0 for covered, 0.5 for partial, and 0.0 for missed |
-| `hallucination_rate` | Fraction of report claims judged unsupported |
-| `detect_rate_avg` | Mean coverage over adversarial instructions |
+| `hallucination_rate` | Mean per-bullet hallucination score: 0.0 grounded, 0.5 ambiguous, 1.0 hallucinated |
+| `detect_rate_avg` | Fraction of scored AP/HO records with mean adversarial-instruction coverage ≥ 0.5 |
 
 ## Citation
 

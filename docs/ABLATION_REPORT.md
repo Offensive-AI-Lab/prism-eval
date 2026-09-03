@@ -8,7 +8,7 @@ prompt context available during extraction.
 | Checkpoint | `prism-qwen3.5-9b-grpo.pt` |
 | Suite | `data/eval_suite.json`, 1,000 records, 250 per setting |
 | Judge | `gemma4-31B-it` |
-| Metrics | Recall is coverage; average detection is `detect_rate_avg` on AP and HO |
+| Metrics | Recall is coverage; average detection is the [thresholded detection rate](../RUBRIC_ADVDET.md#detection-metric) on AP and HO |
 
 Commands are in the [reproduction guide](REPRODUCING.md#ablations). Each table
 names the changed condition; all rows use the same released checkpoint.
@@ -61,8 +61,6 @@ Generation uses a 196-token cap; the monitor reads the last k ∈ {16, 32, 64, 1
 | last 32 | 0.921 | **0.000** | 0.918 | — |
 | last 64 | 0.961 | **0.000** | 0.957 | — |
 | last 128 | **0.977** | 0.002 | **0.968** | — |
-
-Detection = AdversarialDetectionScorer `detect_rate_avg`; defined only for the adversarial settings (AP, HO).
 
 ## Ablation B: window position
 
@@ -128,10 +126,6 @@ identifies cells based on fewer than 50 records.
 
 Support = responses whose templated length exceeds the chunk start; records ending before a chunk produce an empty report by construction and score exactly 0, so conditional means are recovered exactly as `mean × N / support`.
 
-Across supported chunks, AP coverage ranges from 0.536 to 0.716, BC from 0.551
-to 0.803, and BN from 0.961 to 0.984. Chunk 0 has the highest coverage in AP,
-HO, and BC.
-
 ## Ablation C: extraction context
 
 Same responses, same reference window (last 128 tokens of a response capped at
@@ -182,26 +176,6 @@ behavior is held fixed.
 | full context | **0.978** | **0.002** | **0.969** | — |
 | attention zeroed (system+user) | 0.930 | **0.002** | 0.917 | — |
 | prefill (response only) | 0.834 | 0.010 | 0.830 | — |
-
-Response-only prefill retains 0.443 overall coverage and 0.834 BN coverage.
-Prompt masking and response-only prefill have a larger effect on HO: coverage
-falls from 0.647 to 0.328 and 0.227, while mean detection falls from 0.844 to
-0.236 and 0.092. These conditions are out of distribution for a monitor trained
-on full-context extraction, so they measure performance under context removal
-rather than the maximum information available in response-only states.
-
-## Additional configurations
-
-The [window configurations](../configs/ablation/window/) also include chunks
-6–15, first/middle/last windows, and a natural-EOS last window. The
-[context configurations](../configs/ablation/context/) include `masked_user`
-and `swapped` controls. Their results are not tabulated here.
-
-## Interpretation
-
-Later chunks have fewer supporting responses; use the support counts when
-comparing them. In particular, HO has only 29 records at chunk 4 and 12 at
-chunk 5.
 
 PRISM was trained on end-aligned windows with full prompt context. Other
 positions and masked or response-only extraction change that input

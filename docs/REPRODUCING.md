@@ -1,37 +1,18 @@
 # Reproducing the results
 
 Complete the [quickstart](../README.md#quick-start) to install the environment,
-download the main checkpoint, and configure the judge. The target model and
-PRISM checkpoint run on your CUDA GPU; the judge can run on a separate host.
-Paper scoring uses `google/gemma-4-31B-it` with reasoning disabled.
+download the main checkpoint, and configure the judge. The README lists
+[checkpoint configurations](../README.md#checkpoints-and-baselines).
 
-## Configurations
-
-Download the other checkpoints with `uv run python scripts/download_weights.py`.
-Then select a configuration:
-
-| System | Configuration |
-|---|---|
-| PRISM, Qwen3.5-9B | [qwen3.5-9b-grpo.yaml](../configs/main/qwen3.5-9b-grpo.yaml) |
-| PRISM without RL, Qwen3.5-9B | [qwen3.5-9b-sft.yaml](../configs/main/qwen3.5-9b-sft.yaml) |
-| Text-only control | [text_only_baseline.yaml](../configs/main/text_only_baseline.yaml) |
-| PRISM, Gemma-2-9B-it | [gemma-2-9b-it-grpo.yaml](../configs/main/gemma-2-9b-it-grpo.yaml) |
-| PRISM, Ministral-3-8B | [ministral-3-8b-grpo.yaml](../configs/main/ministral-3-8b-grpo.yaml) |
-
-For example, evaluate the model without RL:
+For example, evaluate PRISM without RL:
 
 ```bash
+uv run python scripts/download_weights.py --only prism-qwen3.5-9b-sft
 uv run prism-eval evaluate --config configs/main/qwen3.5-9b-sft.yaml --offline
 ```
 
-The text-only control generates a Qwen response locally, then sends its last
-128 tokens to `runner.baseline_llm`. This is a separate call from judge scoring
-and requires the provider credentials specified in its configuration.
-Set `HF_TOKEN` for gated target models.
-
-LatentQA and Activation Oracles use upstream implementations rather than this
-repository's runners. Their revisions and checkpoint links are in
-[Results](RESULTS.md#upstream-baselines).
+The [text-only control](../configs/main/text_only_baseline.yaml) also requires
+credentials for its separate `runner.baseline_llm` endpoint.
 
 ## Outputs and comparison
 
@@ -42,17 +23,13 @@ Each run writes `rows.jsonl` and `summary.json` under
 |---|---|
 | `summary.JudgeLLMScorer.reward` | Coverage adjusted for hallucination and report length |
 | `summary.JudgeLLMScorer.coverage` | Mean ground-truth instruction coverage |
-| `summary.JudgeLLMScorer.hallucination_rate` | Mean unsupported-claim score |
-| `summary.AdversarialDetectionScorer.detect_rate_avg` | Mean coverage of adversarial instructions on AP and HO |
+| `summary.JudgeLLMScorer.hallucination_rate` | Mean per-bullet hallucination score |
+| `summary.AdversarialDetectionScorer.detect_rate_avg` | Fraction of scored AP/HO records with mean adversarial-instruction coverage ≥ 0.5 |
 
-The scorer summaries also contain per-setting aggregates. Compare them with the
-[reference results](RESULTS.md). Use the canonical `data/eval_suite.json`;
-regenerating a suite or changing the judge defines a different evaluation.
-
-Generation is greedy, but GPU kernels and low-precision arithmetic can affect
-borderline tokens; repeated judge calls can also vary. For a substantial
-difference, compare the checkpoint, suite, judge, scorer settings, target-model
-revision, and generation overrides.
+The summaries also contain per-setting aggregates. Compare them with the
+[reference results](RESULTS.md), using `data/eval_suite.json` and the same
+checkpoint, judge, and generation settings. Small run-to-run differences can
+occur.
 
 `--offline` disables Weave tracing and leaderboard publication, not judge
 calls. To enable tracing, set `experiment.weave_project` and `WANDB_API_KEY`,
@@ -61,8 +38,8 @@ then omit the flag.
 ## Runtime and memory
 
 A reference 1,000-record run on an RTX PRO 6000 with a co-located judge took
-about 20 minutes: 18 for inference and 2 for scoring. Runtime depends on the
-target model, batching, and judge endpoint.
+about 20 minutes. Runtime depends on the target model, batching, and judge
+endpoint.
 
 Reduce `annotation.batch_size` after a GPU out-of-memory error. Use
 `runner.device` to select the inference GPU and `annotation.trace_workers`
@@ -82,14 +59,10 @@ scripts/run_ablation_window_chunks_deep.sh
 scripts/run_ablation_context.sh
 ```
 
-The drivers include configurations beyond those tabulated in
-[the ablation report](ABLATION_REPORT.md). Set
-`PRISM_EVAL_BASE_RESPONSE_CACHE` to reuse generated responses across compatible
-runs. The context driver generates donor pairs for its `swapped` condition.
-
-[configs/template.yaml](../configs/template.yaml) describes window and context
-overrides for individual runs. `scripts/prefill_response_cache.py --help`
-describes cache construction from existing Weave traces.
+See the [ablation report](ABLATION_REPORT.md) for results and
+[configs/template.yaml](../configs/template.yaml) for individual window and
+context overrides. Set `PRISM_EVAL_BASE_RESPONSE_CACHE` to reuse generated
+responses across compatible runs.
 
 ## Optional installation check
 

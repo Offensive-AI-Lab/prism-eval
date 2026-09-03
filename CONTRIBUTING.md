@@ -14,7 +14,7 @@ endpoints. Put hardware-dependent instructions in
 ## Add a runner
 
 Implement the `setup` and `run_eval` methods in the
-[`ITMRunner` protocol](prism_eval/runner.py). Then:
+[runner protocol](prism_eval/runner.py). Then:
 
 1. Add the implementation under `prism_eval/runners/`.
 2. Register it in `RUNNER_TYPES` and `build_runner` in
