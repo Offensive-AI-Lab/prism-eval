@@ -46,8 +46,7 @@ uv run prism-eval evaluate --config configs/smoke.yaml --offline
 
 This command loads the Qwen checkpoint, generates responses, extracts
 activations, decodes reports, and writes local output. Judge scoring and Weave
-are disabled. Exact match and token F1 from this run are implementation checks,
-not substitutes for the reported metrics.
+are disabled.
 
 ## Main configurations
 
