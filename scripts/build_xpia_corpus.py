@@ -21,6 +21,9 @@ Requirements (this is a standalone tool, not a training/eval dependency):
     python -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab')"
     git clone https://github.com/microsoft/BIPIA
     git clone https://github.com/uiuc-kang-lab/InjecAgent
+    # Clone only — do NOT `pip install` BIPIA (its pyproject pulls torch/vllm/
+    # deepspeed/...). This script adds --bipia-root to sys.path and imports
+    # bipia.data directly; the deps listed above are all it needs.
 
 Usage:
     python scripts/build_xpia_corpus.py \
