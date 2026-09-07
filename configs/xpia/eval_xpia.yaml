@@ -1,11 +1,13 @@
-# Full XPIA suite. Build it first; the corpus ships, but the built suite
+# Full XPIA suite. Build the corpus, then the suite (neither ships):
+#     python scripts/build_xpia_corpus.py --bipia-root ./BIPIA \
+#         --injecagent-root ./InjecAgent --out data/xpia_corpus.parquet
+# then build the suite
 # does not (it is large and regenerable):
 #
 #   python scripts/fetch_xpia_evals.py --count 13950 --benign-count 200 \
 #     -o data/eval_suite_xpia.json
 #
-# For a quick check use configs/xpia/eval_xpia_smoke.yaml, whose
-# 20-record suite is committed.
+# For a quick check use configs/xpia/eval_xpia_smoke.yaml.
 # XPIA evaluation suite: BIPIA, LLMail, and InjecAgent.
 # Reconstructed system/user/tool conversations rendered through the Qwen chat
 # template; gemma4 ground-truth extraction + judge; adversarial identifier finds

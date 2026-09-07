@@ -125,9 +125,10 @@ This corpus covers indirect prompt injection against tool-using agents. The
 attack appears in a tool result, email, or retrieved document rather than in the
 user's message.
 
-`data/xpia_corpus.parquet` — 25,002 tagged rows (24,802 attack, 200
-benign), drawn from the three agent-injection benchmarks the eval actually
-reads:
+The corpus (25,002 rows — 24,802 attack, 200 benign) is **not shipped**: it
+embeds upstream benchmark text under the sources' own terms. Rebuild it locally
+with `scripts/build_xpia_corpus.py`, which fetches the three public benchmarks
+and reconstructs the corpus at the same per-source volume:
 
 | Source | Rows | Upstream |
 |---|---|---|
@@ -135,27 +136,34 @@ reads:
 | `llmail` | 9,998 | [microsoft/llmail-inject-challenge](https://huggingface.co/datasets/microsoft/llmail-inject-challenge) |
 | `injecagent` | 1,054 | [uiuc-kang-lab/InjecAgent](https://github.com/uiuc-kang-lab/InjecAgent) |
 
-Each row carries the injected content plus a tagging layer added here:
-`category`, `attacker_goal`, `delivery_technique`, `evasion_technique`,
-`injection_position`, `tool_output_type`, `scope`, and a `taxonomy_rationale`.
+Each row carries the injected content plus a coarse tagging layer
+(`category`, `attacker_goal`, `delivery_technique`, `evasion_technique`,
+`injection_position`, `tool_output_type`, `scope`, `taxonomy_rationale`) that
+keeps the schema populated for the suite builder and analysis.
 
-Build an evaluation suite from the corpus with:
+The rebuild reconstructs the same benchmarks at the same per-source volume, not
+the identical rows behind the reported numbers: the original row selection and a
+fine LLM taxonomy pass ran in a private pipeline and are not reproduced. The
+assembly follows M. Fomin, "When Benchmarks Lie" (arXiv:2602.14161) and the
+loaders in [maxf-zn/prompt-mining](https://github.com/maxf-zn/prompt-mining)
+(MIT, © Zenity / Z Labs).
 
 ```bash
-python scripts/fetch_xpia_evals.py --smoke 20 -o data/eval_suite_xpia_smoke.json
+# 1. fetch the upstream benchmarks (user-supplied, under their own terms)
+git clone https://github.com/microsoft/BIPIA
+git clone https://github.com/uiuc-kang-lab/InjecAgent
+# 2. reconstruct the corpus (LLMail is pulled from Hugging Face)
+python scripts/build_xpia_corpus.py --bipia-root ./BIPIA \
+  --injecagent-root ./InjecAgent --out data/xpia_corpus.parquet
+# 3. build an evaluation suite from it (needs a judge endpoint)
 python scripts/fetch_xpia_evals.py --count 13950 --benign-count 200 \
   -o data/eval_suite_xpia.json
 ```
 
-`--count` is a per-source attack-row limit; 13,950 selects every available row
-from all three sources. The builder reconstructs a system/user/tool conversation per row and derives
-ground-truth instruction bullets with an LLM, so it needs a judge endpoint.
-The 20-record smoke suite ships (`data/eval_suite_xpia_smoke.json`);
-the full build does not — it is regenerable and large.
-
-The added tags are licensed with this project; the underlying prompts retain
-their original licenses. BIPIA, LLMail-Inject, and InjecAgent each carry their own terms — check them before
-redistributing derivatives.
+Neither the corpus nor the built suites ship. BIPIA, LLMail-Inject, and
+InjecAgent each carry their own terms (all MIT-licensed code; BIPIA's context
+data has additional per-source terms) — check them before redistributing
+derivatives.
 
 The corpus contains adversarial payloads, including exfiltration attempts,
 instruction overrides, and social-engineering content.

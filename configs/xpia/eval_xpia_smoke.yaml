@@ -1,4 +1,8 @@
 # XPIA smoke evaluation: 20-record pipeline check with the GRPO checkpoint.
+# Build the suite first (the corpus and built suites are not shipped):
+#     python scripts/build_xpia_corpus.py --bipia-root ./BIPIA \
+#         --injecagent-root ./InjecAgent --out data/xpia_corpus.parquet
+#     python scripts/fetch_xpia_evals.py --smoke 20 -o data/eval_suite_xpia_smoke.json
 # Publish OFF (throwaway). Used to catch checkpoint/runner/scorer breakage in
 # minutes before the 3k / 25k runs. Same scorers + checkpoint as the real config.
 

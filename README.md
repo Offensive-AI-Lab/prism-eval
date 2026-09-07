@@ -90,9 +90,9 @@ evaluation ID.
 See the [data card](DATA_CARD.md) for the schema, sources, and construction
 process, and [License](#license) for usage restrictions.
 
-The indirect prompt injection corpus remains under provenance and
-redistribution review.
-Do not redistribute `data/xpia_corpus.parquet` until that review is complete.
+The indirect prompt injection corpus is not distributed. Rebuild it from the
+public benchmarks with `scripts/build_xpia_corpus.py` (see the data card);
+none of the upstream prompt text is shipped here.
 
 ## Metrics
 

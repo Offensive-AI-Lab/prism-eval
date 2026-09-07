@@ -18,13 +18,15 @@ This product includes eval records derived from third-party datasets:
     applies to the BN records regardless of the Apache-2.0 licence
     covering this project's code. See DATA_CARD.md.
 
-  * Indirect prompt injection corpus (data/xpia_corpus.parquet, 25,002 rows) —
-    derived from three agent-injection benchmarks, each under its own
-    upstream terms:
-      - BIPIA               (https://github.com/microsoft/BIPIA)
-      - LLMail-Inject       (https://huggingface.co/datasets/microsoft/llmail-inject-challenge)
-      - InjecAgent          (https://github.com/uiuc-kang-lab/InjecAgent)
-    The taxonomy tagging layer is this project's; the prompts are not.
+  * Indirect prompt injection corpus — NOT distributed. It is reconstructed
+    locally by scripts/build_xpia_corpus.py from three public agent-injection
+    benchmarks, each under its own upstream terms (fetched by the user):
+      - BIPIA          MIT; Yi et al. 2023   (https://github.com/microsoft/BIPIA)
+      - LLMail-Inject  MIT; Microsoft        (https://huggingface.co/datasets/microsoft/llmail-inject-challenge)
+      - InjecAgent     MIT; Zhan et al. 2024 (https://github.com/uiuc-kang-lab/InjecAgent)
+    The assembly follows M. Fomin, "When Benchmarks Lie" (arXiv:2602.14161) and
+    the loaders in https://github.com/maxf-zn/prompt-mining (MIT, (c) Zenity /
+    Z Labs). None of the upstream prompt text is redistributed here.
 
 The Adversarial Prompt (AP) and Hidden Objective (HO) records were
 generated for this project and are covered by the Apache-2.0 licence.

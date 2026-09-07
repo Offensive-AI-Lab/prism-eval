@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Build the xpia XPIA eval suite (bipia / llmail / injecagent).
 
-These three datasets inside ``xpia_testset_tagged.parquet`` are the live,
+These three datasets inside the reconstructed ``xpia_corpus.parquet``
+(build it with scripts/build_xpia_corpus.py) are the live,
 indirect prompt-injection (XPIA) core: attacker text rides inside tool output,
 emails, or retrieved documents that an agent is asked to process. We reconstruct
 each row into a real multi-message conversation so the injected span lands in a
@@ -604,6 +605,14 @@ def main() -> None:
 
     import pandas as pd
 
+    if not Path(args.parquet).exists():
+        raise SystemExit(
+            f"corpus not found: {args.parquet}\n"
+            "The XPIA corpus is not shipped (it embeds upstream benchmark text). "
+            "Rebuild it from the public sources first:\n"
+            "  python scripts/build_xpia_corpus.py --bipia-root ./BIPIA "
+            "--injecagent-root ./InjecAgent --out data/xpia_corpus.parquet"
+        )
     df = pd.read_parquet(args.parquet)
     rows_df = select_rows(df, args)
     rows = rows_df.to_dict("records")
