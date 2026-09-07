@@ -107,6 +107,16 @@ Adversarial detection is scored on AP and HO using the
 | `hallucination_rate` | Mean per-bullet hallucination score: 0.0 grounded, 0.5 ambiguous, 1.0 hallucinated |
 | `detect_rate_avg` | Fraction of scored AP/HO records with mean adversarial-instruction coverage ≥ 0.5 |
 
+## Development
+
+```bash
+uv sync --extra dev          # test dependencies (installs pytest)
+uv run pytest tests -q       # CPU-only; no GPU, model, or judge endpoint needed
+```
+
+`uv sync` downloads a CUDA-enabled PyTorch build (several GB); that is expected —
+evaluation runs the target model on a GPU.
+
 ## Citation
 
 ```bibtex

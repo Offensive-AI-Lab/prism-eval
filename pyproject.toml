@@ -21,7 +21,7 @@ dependencies = [
     "openai>=1.0",
     "bert-score>=0.3.13",
     "numpy>=1.24",
-    "wandb>=0.16",
+    "wandb>=0.25.1",
     "weave>=0.50",
     "torch>=2.0",
     "torchvision>=0.15",
@@ -31,10 +31,9 @@ dependencies = [
     "pyyaml>=6.0",
     "datasets>=2.14",
     "huggingface-hub>=0.20",
+    "requests>=2.32",  # modern requests/urllib3 (avoids a stale-version import warning)
 ]
 
-[tool.uv]
-extra-index-url = ["https://download.pytorch.org/whl/cu128"]
 
 [project.optional-dependencies]
 dev = [
