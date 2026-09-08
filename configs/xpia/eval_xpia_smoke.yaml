@@ -1,14 +1,10 @@
-# XPIA smoke evaluation: 20-record pipeline check with the GRPO checkpoint.
-# Build the suite first (the corpus and built suites are not shipped):
-#     python scripts/build_xpia_corpus.py --bipia-root ./BIPIA \
-#         --injecagent-root ./InjecAgent --out data/xpia_corpus.parquet
-#     python scripts/fetch_xpia_evals.py --smoke 20 -o data/eval_suite_xpia_smoke.json
-# Publish OFF (throwaway). Used to catch checkpoint/runner/scorer breakage in
-# minutes before the 3k / 25k runs. Same scorers + checkpoint as the real config.
+# Twenty-record indirect prompt injection pipeline check.
+# Build the corpus, then run:
+#   python scripts/fetch_xpia_evals.py --smoke 20 -o data/eval_suite_xpia_smoke.json
 
 experiment:
   name: prism_xpia_smoke
-  notes: "Smoke validation on 20 XPIA records using the released PRISM checkpoint."
+  notes: "Twenty-record indirect prompt injection pipeline check."
   tags: [xpia, smoke]
   weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
 

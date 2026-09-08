@@ -121,52 +121,36 @@ Coverage records derive from UltraChat, IF Multi-Constraints, and IFEval.
 
 ## Indirect prompt injection benchmarks
 
-This corpus covers indirect prompt injection against tool-using agents. The
-attack appears in a tool result, email, or retrieved document rather than in the
-user's message.
+The supplemental corpus contains 25,002 records from three public benchmarks:
 
-The corpus (25,002 rows — 24,802 attack, 200 benign) is **not shipped**: it
-embeds upstream benchmark text under the sources' own terms. Rebuild it locally
-with `scripts/build_xpia_corpus.py`, which fetches the three public benchmarks
-and reconstructs the corpus at the same per-source volume:
+| Source | Records | Upstream |
+|---|---:|---|
+| BIPIA | 13,950 | [microsoft/BIPIA](https://github.com/microsoft/BIPIA) |
+| LLMail-Inject | 9,998 | [microsoft/llmail-inject-challenge](https://huggingface.co/datasets/microsoft/llmail-inject-challenge) |
+| InjecAgent | 1,054 | [uiuc-kang-lab/InjecAgent](https://github.com/uiuc-kang-lab/InjecAgent) |
 
-| Source | Rows | Upstream |
-|---|---|---|
-| `bipia` | 13,950 | [microsoft/BIPIA](https://github.com/microsoft/BIPIA) |
-| `llmail` | 9,998 | [microsoft/llmail-inject-challenge](https://huggingface.co/datasets/microsoft/llmail-inject-challenge) |
-| `injecagent` | 1,054 | [uiuc-kang-lab/InjecAgent](https://github.com/uiuc-kang-lab/InjecAgent) |
-
-Each row carries the injected content plus a coarse tagging layer
-(`category`, `attacker_goal`, `delivery_technique`, `evasion_technique`,
-`injection_position`, `tool_output_type`, `scope`, `taxonomy_rationale`) that
-keeps the schema populated for the suite builder and analysis.
-
-The rebuild reconstructs the same benchmarks at the same per-source volume, not
-the identical rows behind the reported numbers: the original row selection and a
-fine LLM taxonomy pass ran in a private pipeline and are not reproduced. The
-assembly follows M. Fomin, "When Benchmarks Lie" (arXiv:2602.14161) and the
-loaders in [maxf-zn/prompt-mining](https://github.com/maxf-zn/prompt-mining)
-(MIT, © Zenity / Z Labs).
+The corpus and derived suites are not distributed. Build them locally from the
+upstream sources:
 
 ```bash
-# 1. fetch the upstream benchmarks (user-supplied, under their own terms)
 git clone https://github.com/microsoft/BIPIA
 git clone https://github.com/uiuc-kang-lab/InjecAgent
-# 2. reconstruct the corpus (LLMail is pulled from Hugging Face)
 python scripts/build_xpia_corpus.py --bipia-root ./BIPIA \
   --injecagent-root ./InjecAgent --out data/xpia_corpus.parquet
-# 3. build an evaluation suite from it (needs a judge endpoint)
 python scripts/fetch_xpia_evals.py --count 13950 --benign-count 200 \
   -o data/eval_suite_xpia.json
 ```
 
-Neither the corpus nor the built suites ship. BIPIA, LLMail-Inject, and
-InjecAgent each carry their own terms (all MIT-licensed code; BIPIA's context
-data has additional per-source terms) — check them before redistributing
-derivatives.
+The rebuild preserves the benchmark families, schema, and per-source counts,
+but not the original row selection or fine-grained taxonomy used for the
+reported supplemental results. It therefore exercises the same evaluation
+pipeline but does not reproduce those result values exactly.
 
-The corpus contains adversarial payloads, including exfiltration attempts,
-instruction overrides, and social-engineering content.
+The reconstruction follows the source-loading structure described by
+[Fomin (2026)](https://arxiv.org/abs/2602.14161) and
+[maxf-zn/prompt-mining](https://github.com/maxf-zn/prompt-mining).
+The build script adds coarse deterministic taxonomy fields required by the
+suite builder. Benchmark text remains subject to its upstream terms.
 
 ## Limitations
 

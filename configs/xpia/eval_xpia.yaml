@@ -1,14 +1,9 @@
-# Full XPIA suite. Build the corpus, then the suite (neither ships):
-#     python scripts/build_xpia_corpus.py --bipia-root ./BIPIA \
-#         --injecagent-root ./InjecAgent --out data/xpia_corpus.parquet
-# then build the suite
-# does not (it is large and regenerable):
-#
+# Indirect prompt injection evaluation: BIPIA, LLMail, and InjecAgent.
+# Build the corpus and suite before running this configuration:
+#   python scripts/build_xpia_corpus.py --bipia-root ./BIPIA \
+#     --injecagent-root ./InjecAgent --out data/xpia_corpus.parquet
 #   python scripts/fetch_xpia_evals.py --count 13950 --benign-count 200 \
 #     -o data/eval_suite_xpia.json
-#
-# For a quick check use configs/xpia/eval_xpia_smoke.yaml.
-# XPIA evaluation suite: BIPIA, LLMail, and InjecAgent.
 # Reconstructed system/user/tool conversations rendered through the Qwen chat
 # template; gemma4 ground-truth extraction + judge; adversarial identifier finds
 # the injected bullet via the setting="AP" rule. New leaderboard → judge-override
@@ -16,13 +11,13 @@
 
 experiment:
   name: xpia
-  notes: "Indirect prompt injection (XPIA) suite: bipia+llmail+injecagent reconstructed into tool-slot conversations, prism runner."
+  notes: "BIPIA, LLMail, and InjecAgent records reconstructed as tool-context conversations."
   tags: [xpia, indirect_injection, AP]
   weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
 
 suite:
   path: data/eval_suite_xpia.json
-  # All xpia records are setting="AP" (the adversarial identifier's AP rule
+  # All records use setting="AP" so the adversarial identifier's AP rule
   # finds the injected bullet). Benign rows carry no injected directive.
   settings: [AP]
 
@@ -47,20 +42,10 @@ annotation:
   emit_trace: true
   op_name: itm_annotate
   batch_size: 16
-  # Length-aware batching: cap (n_records * max_prompt_len) per GPU batch so the
-  # base-generation forward can't OOM on long-doc outliers. XPIA lengths span
-  # median ~350 tok to a few llmail rows ~16k; fixed batch=16 left-pads short
-  # rows up to a 16k member (16*16k tok) and blew GPU7 to ~92 GiB. 16384 keeps
-  # the ~99% short rows at full batch=16 (16*350 << budget) while long rows fall
-  # into small/singleton batches. (Empirically batch16*1088≈17.4k ran fine.)
+  # Limit padding overhead when batches contain long benchmark documents.
   max_batch_tokens: 16384
 
 evaluation:
   evaluation_name: prism_xpia
   publish_leaderboard: true
-  # Bumped from itm_prism_xpia: the scorers now emit a per-source
-  # (bipia/llmail/injecagent) `by_source` breakdown and carry `source` on the
-  # row + judge trace, which shifts the evaluation digest. Per the leaderboard
-  # bump policy (CONTRIBUTING.md), a new name keeps the original v1 run visible
-  # instead of shadowing it. The v1 row stays addressable under itm_prism_xpia.
   leaderboard_name: prism_xpia_by_source

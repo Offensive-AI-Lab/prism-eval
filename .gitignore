@@ -24,15 +24,10 @@ logs/
 # Regenerable suite-build intermediates (scripts/build_suite.py --*-progress)
 data/external/
 
-# The full indirect prompt injection suite and its build intermediates are
-# regenerable: the corpus with scripts/build_xpia_corpus.py, the suites with
-# scripts/fetch_xpia_evals.py. Neither the corpus nor the built suites ship
-# (they embed upstream benchmark text). Scripts and configs are committed.
-# and configs are committed.
+# Locally rebuilt indirect prompt injection corpus and suites.
 data/eval_suite_xpia.json
 data/eval_suite_xpia_smoke.json
 data/xpia_progress.jsonl
-# Ignore large intermediates; retain the indirect prompt injection source corpus.
 *.parquet
 
 # Editors / OS

@@ -10,11 +10,11 @@ the same per-source volume from the three public benchmarks it draws on:
 
 The assembly logic follows Max Fomin, "When Benchmarks Lie" (arXiv:2602.14161)
 and the loaders in https://github.com/maxf-zn/prompt-mining (MIT, (c) Zenity /
-Z Labs). Row selection is a seeded sample to the released per-source counts
+Z Labs). Row selection is a seeded sample to the documented per-source counts
 (BIPIA 13,950 = 13,750 attack + 200 benign / LLMail 9,998 / InjecAgent 1,054;
-total 25,002); it reproduces the same
-benchmarks at the same volume, not the identical rows behind the reported
-numbers (that selection + the LLM taxonomy pass lived in a private pipeline).
+total 25,002). The original row selection and fine-grained taxonomy labels are
+not available, so rebuilt data will not reproduce the supplemental results
+exactly.
 
 Requirements (this is a standalone tool, not a training/eval dependency):
     pip install datasets jsonlines nltk transformers pandas pyarrow
@@ -51,9 +51,8 @@ SCHEMA = [
     "tier1_nature", "tier2_category",
 ]
 
-# Coarse, deterministic tags per source. The original fine taxonomy came from a
-# private LLM pass and is neither reproducible nor needed to run the eval; these
-# keep the schema populated for scripts/fetch_xpia_evals.py and analyze_xpia.py.
+# Coarse, deterministic tags keep the schema populated for the suite builder and
+# analysis script. They do not reproduce the unavailable fine-grained taxonomy.
 BIPIA_TOOL = {"email": "email_messaging", "table": "structured_data", "code": "code"}
 
 
