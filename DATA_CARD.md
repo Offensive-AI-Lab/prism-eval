@@ -50,16 +50,16 @@ locations, and provenance metadata. The complete schema is in
 ## Judge calibration data
 
 The files in `data/calibration/` contain human annotations and judge scores.
-Coverage, adversarial identification, and FOLLOWED behavior labels have
-separate calibration sets.
+Coverage and adversarial-identification labels support the paper evaluation.
+The behavior labels support an optional analysis added after the paper.
 
 | File | Contents |
 |---|---|
 | `coverage_gold.jsonl` | 93 reports / 373 instruction labels, with PRISM reports, judge scores, reconciled gold labels, and independent human labels where available |
 | `advdet_gold.jsonl` | 50 records with gold adversarial-instruction indices and judge selections |
 | `coverage_calibration.json` | Stored coverage and adversarial-identification agreement report |
-| `follow_snapshot.jsonl` | 184 annotation records: 92 calls labeled by two annotators |
-| `follow_calibration.json` | Stored FOLLOWED agreement report |
+| `follow_snapshot.jsonl` | 184 annotation records for the post-paper behavior analysis: 92 calls labeled by two annotators |
+| `follow_calibration.json` | Stored behavior-judge agreement report |
 
 ### Scoring judge
 
@@ -93,7 +93,11 @@ using [RUBRIC_ADVDET.md](RUBRIC_ADVDET.md).
 The judge's selected set matches gold exactly on 49 of 50 records.
 Sampling strata are defined in [configs/advdet_queue_spec.json](configs/advdet_queue_spec.json).
 
-### FOLLOWED behavior labels
+### Post-paper behavior labels
+
+This calibration is not part of the paper's judge calibration or reported
+evaluation metrics. It supports the optional behavior-conditioned analysis of
+the indirect prompt injection results.
 
 Annotators saw the prompt, target-model response, and ground-truth
 instructions, with the judge's selections hidden. They assigned one binary
@@ -102,9 +106,11 @@ out; `0` for refusal, abandonment, contradiction, or no evidence. An obeyed
 injection still receives `1`.
 
 The sample is stratified by source and followed/refused outcome; see
-[configs/follow_queue_spec.json](configs/follow_queue_spec.json).
-The snapshot contains 92 double-annotated calls. Agreement is measured
-against individual annotators, without a reconciled gold set.
+[configs/follow_queue_spec.json](configs/follow_queue_spec.json). This balanced
+sample measures agreement and must not be used to estimate how often attacks
+succeed in the full corpus. The snapshot contains 92 double-annotated calls.
+Agreement is measured against individual annotators, without a reconciled gold
+set.
 
 | Comparison | Cohen's κ | Gwet's AC1 | n |
 |---|---|---|---|
@@ -112,11 +118,11 @@ against individual annotators, without a reconciled gold set.
 | judge vs human | **0.734** | 0.745 | 414 items / 184 records |
 
 ```bash
-python scripts/calibrate_follow.py -i data/calibration/follow_snapshot.jsonl
+uv run python scripts/calibrate_follow.py -i data/calibration/follow_snapshot.jsonl
 ```
 
 Calibration labels are project-authored; the underlying prompts retain their
-source terms. FOLLOWED records derive from BIPIA, InjecAgent, and LLMail.
+source terms. Behavior records derive from BIPIA, InjecAgent, and LLMail-Inject.
 Coverage records derive from UltraChat, IF Multi-Constraints, and IFEval.
 
 ## Indirect prompt injection benchmarks

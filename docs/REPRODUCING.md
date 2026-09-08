@@ -35,6 +35,24 @@ occur.
 calls. To enable tracing, set `experiment.weave_project` and `WANDB_API_KEY`,
 then omit the flag.
 
+## Indirect prompt injection evaluation
+
+Build the indirect prompt injection suite as described in the
+[data card](../DATA_CARD.md#indirect-prompt-injection-benchmarks), then run:
+
+```bash
+uv run prism-eval evaluate --config configs/xpia/eval_xpia.yaml --offline
+uv run python scripts/analyze_xpia.py \
+  --rows results/xpia/rows.jsonl \
+  --suite data/eval_suite_xpia.json \
+  -o results/xpia/analysis.json
+```
+
+This default analysis produces the indirect prompt injection results reported
+in the paper. The optional `--with-behavior` mode was added after the paper and
+runs an additional behavior judge over the saved responses. See
+[Behavior analysis](BEHAVIOR_ANALYSIS.md).
+
 ## Runtime and memory
 
 A reference 1,000-record run on an RTX PRO 6000 with a co-located judge took

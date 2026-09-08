@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Calibrate the behavior judge's FOLLOWED label against human annotations.
+"""Calibrate the post-paper behavior judge against human annotations.
 
-Reads a JSONL snapshot of human FOLLOWED labels
+Reads a JSONL snapshot of human ``followed`` labels
 (`data/calibration/follow_snapshot.jsonl`) and
-computes agreement between the judge's per-bullet FOLLOWED label and humans,
+computes agreement between the judge's per-instruction label and humans,
 alongside the human-vs-human ceiling.
 
-Each per-bullet FOLLOWED label is treated as a set of "followed" bullets (the
+Each label vector is treated as a set of followed instructions (the
 1-based indices labeled 1), so the same set-based agreement math as the
 adversarial flow applies:
 
@@ -15,15 +15,13 @@ adversarial flow applies:
     Cohen's kappa / Gwet's AC1. The ceiling for how reliable the human signal
     itself is.
   - **Judge-vs-human agreement** — same metrics comparing the judge's followed
-    set (`judge_picks`) to each human's (`human_picks`). How well the FOLLOWED
-    judge matches a typical annotator.
+    set (`judge_picks`) to each human's (`human_picks`).
   - **Per-source breakdown** — bipia / llmail / injecagent.
   - **Per-stratum breakdown** — *_followed vs *_refused strata.
   - **Worst-disagreement rows** for inspection.
 
-Note vs the adversarial flow: there "positive" = adversarial bullet (rare), so
-Gwet AC1 was the headline. Here "positive" = FOLLOWED bullet, which is common
-(~56% in the xpia run), so Cohen's kappa is better behaved and both are
+The calibration sample is balanced across followed and refused attack outcomes;
+it measures agreement, not attack prevalence. Cohen's kappa and Gwet's AC1 are
 reported side by side.
 
 Usage:
@@ -294,7 +292,7 @@ def _print_summary(report: dict) -> None:
         file=sys.stderr,
     )
 
-    print("\nPooled bullet-level FOLLOWED agreement (chance-corrected):", file=sys.stderr)
+    print("\nPooled instruction-level behavior agreement (chance-corrected):", file=sys.stderr)
     print(
         f"  {'':20s} {'humans ↔ humans':>20s}  {'judge ↔ humans':>22s}",
         file=sys.stderr,
@@ -387,7 +385,7 @@ def main() -> int:
         "--snapshot",
         type=Path,
         required=True,
-        help="JSONL snapshot of human FOLLOWED labels.",
+        help="JSONL snapshot of human behavior labels.",
     )
     parser.add_argument(
         "-o", "--out", type=Path, help="Optional JSON report path."

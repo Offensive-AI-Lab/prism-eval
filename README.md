@@ -107,6 +107,14 @@ Adversarial detection is scored on AP and HO using the
 | `hallucination_rate` | Mean per-bullet hallucination score: 0.0 grounded, 0.5 ambiguous, 1.0 hallucinated |
 | `detect_rate_avg` | Fraction of scored AP/HO records with mean adversarial-instruction coverage ≥ 0.5 |
 
+## Post-paper behavior analysis
+
+The paper includes the BIPIA, LLMail-Inject, and InjecAgent evaluation. An
+optional analysis added afterward labels whether the target model carried out
+each instruction and compares PRISM recovery for followed and non-followed
+instructions. It is not part of the paper's metrics or default evaluation path.
+See [Behavior analysis](docs/BEHAVIOR_ANALYSIS.md).
+
 ## Citation
 
 ```bibtex

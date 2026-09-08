@@ -1,13 +1,10 @@
-"""The shipped judge-calibration gold set must reproduce its published numbers.
+"""The behavior-calibration snapshot must reproduce its stored report.
 
-`data/calibration/` is a contribution in its own right: human labels for the
-FOLLOWED judge, and the agreement statistics computed from them. Those numbers
-are what justify trusting an LLM judge to score the benchmark at all, so they
-have to be checkable rather than asserted.
+The behavior judge is a post-paper analysis. These tests recompute its agreement
+statistics from the released human labels and compare them with the stored
+report.
 
-These tests recompute the headline statistics straight from the raw labels and
-compare against the frozen report. If either file is edited without the other,
-they fail.
+If either artifact changes without the other, the tests fail.
 """
 
 from __future__ import annotations
@@ -77,9 +74,8 @@ def test_judge_vs_human_kappa_matches_frozen_report():
     assert p_obs == pytest.approx(pooled["p_obs"], abs=1e-9)
 
 
-def test_published_agreement_is_substantial():
-    """Guard the claim the benchmark rests on: the judge tracks humans about as
-    well as humans track each other."""
+def test_stored_agreement_is_substantial():
+    """Check that the stored behavior judge tracks the human labels."""
     f = _frozen()
     human_human = f["iaa"]["pooled"]["cohen_k"]
     judge_human = f["judge_vs_human"]["pooled"]["cohen_k"]

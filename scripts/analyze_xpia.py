@@ -1,25 +1,24 @@
 #!/usr/bin/env python3
-"""Behavioural analysis of an XPIA evaluation run — no Weave required.
+"""Analyze an indirect prompt injection evaluation run without Weave.
 
 `prism-eval evaluate --offline` writes `results/<experiment>/rows.jsonl` with
-each record's ITM report, the target model's response and the judge's per-bullet
-scores. This script joins that against the suite file (for the prompt and the
-attack taxonomy) and produces the aggregate tables behind the XPIA results in
-docs/RESULTS.md.
+each record's PRISM report, target-model response, and per-instruction scores.
+This script joins those rows with the suite and produces the indirect prompt
+injection aggregates reported in the paper.
 
     python scripts/analyze_xpia.py \
         --rows results/xpia/rows.jsonl \
         --suite data/eval_suite_xpia.json \
         -o results/xpia/analysis.json
 
-Two of the analyses need extra per-record labels that only an LLM judge can
-produce, so they are **opt-in** — each costs one judge call per record:
+Two post-processing analyses need extra per-record labels from an LLM judge and
+are opt-in. Each costs one judge call per record:
 
-    --with-behavior     Did the model act on each ground-truth instruction?
-                        Enables follow-gated coverage and the behaviour profile.
+    --with-behavior     Post-paper analysis of whether the target model acted
+                        on each ground-truth instruction.
     --with-provenance   Where does each claim the monitor produced come from —
                         the prompt, the response, or nowhere? Enables the
-                        instruction-vs-behaviour claim split.
+                        instruction-versus-behavior claim split.
 
 Without them the structural analysis (coverage, hallucination, adversarial
 detection, per-source and per-stratum breakdowns) still runs, from scores the
@@ -27,7 +26,8 @@ evaluation already computed, and needs no judge at all.
 
 Labels are cached next to the output so a re-run doesn't pay for them twice.
 
-The aggregation functions below reproduce the published numbers.
+The default aggregates reproduce the paper's indirect prompt injection results.
+Behavior-conditioned aggregates are a post-paper extension.
 """
 
 from __future__ import annotations
@@ -157,7 +157,7 @@ def _detect_block_from_scores(picked: list[float]) -> dict:
 def follow_row_metrics(
     inst_scores: list[float], adv_indices: list[int], followed: list[int] | None
 ) -> dict | None:
-    """Per-row follow-gated metrics, or None if `followed` is unavailable.
+    """Per-row behavior-conditioned metrics, or None if labels are unavailable.
 
     Returns row-level pieces the aggregator combines:
       adv_det : detect block over followed-adversarial bullets, or None
@@ -186,7 +186,7 @@ def follow_row_metrics(
     }
 
 def follow_agg(rows: list[dict]) -> dict:
-    """Aggregate follow-gated metrics over rows that carry behavior labels."""
+    """Aggregate behavior-conditioned metrics over labeled rows."""
     with_fg = [r for r in rows if r.get("fg") is not None]
     fg = [r["fg"] for r in with_fg]
     if not fg:
@@ -222,7 +222,7 @@ def follow_agg(rows: list[dict]) -> dict:
         "adversarial_recall": _block("adv_det"),
         # benign recall over followed-benign bullets
         "benign_recall": _block("ben_rec"),
-        # attack-success / follow rates (ITM-independent, bullet-level)
+        # Target-model follow rates are independent of PRISM, at bullet level.
         "adversarial_follow_rate": (sum_adv_f / sum_adv) if sum_adv else None,
         "benign_follow_rate": (sum_ben_f / sum_ben) if sum_ben else None,
         "n_adv_bullets": sum_adv,
@@ -535,14 +535,14 @@ def _cache_append(path: Path, record: dict) -> None:
 
 
 def label_behavior(rows, cache_path: Path, model, workers: int) -> dict[str, dict]:
-    """Per-GT `adversarial` + `followed` via the calibrated FOLLOWED judge."""
+    """Label per-instruction target-model behavior for post-paper analysis."""
     from prism_eval.scoring import behavior_judge
 
     cache = _cache_load(cache_path)
     todo = [r for r in rows if r["eval_id"] not in cache and r["instructions"]]
     if not todo:
         return cache
-    print(f"behaviour judge: {len(todo)} records "
+    print(f"behavior judge: {len(todo)} records "
           f"({len(cache)} cached)", file=sys.stderr)
 
     def one(r):
@@ -605,11 +605,11 @@ def main() -> int:
                     help="The suite file the run used (for prompts and taxonomy)")
     ap.add_argument("-o", "--out", type=Path, required=True)
     ap.add_argument("--with-behavior", action="store_true",
-                    help="Run the FOLLOWED judge (1 call/record). Enables "
-                         "follow-gated coverage and the behaviour profile.")
+                    help="Run the post-paper behavior judge (1 call/record). "
+                         "Enables behavior-conditioned coverage and profiles.")
     ap.add_argument("--with-provenance", action="store_true",
                     help="Run the provenance judge (1 call/record). Enables the "
-                         "claim-side instruction-vs-behaviour split.")
+                         "claim-side instruction-versus-behavior split.")
     ap.add_argument("--model", default=os.environ.get("PRISM_EVAL_MODEL"),
                     help="Judge model (default: $PRISM_EVAL_MODEL)")
     ap.add_argument("--workers", type=int, default=8)
@@ -641,8 +641,8 @@ def main() -> int:
         provenance = label_provenance(rows, args.out.with_suffix(".provenance.jsonl"),
                                       args.model, args.workers)
 
-    # Row assembly matches the published aggregation, so the numbers below
-    # mean the same thing as the published ones.
+    # Row assembly preserves the paper aggregates; optional labels add separate
+    # post-processing sections.
     for r in rows:
         inst_scores = [d.get("score", 0.0) for d in r.get("instruction_details", [])]
         n = len(inst_scores)
@@ -732,7 +732,7 @@ def main() -> int:
     print(f"{'overall':14}{o['n']:>8}{o['recall']:>11.4f}{o['halluc']:>9.4f}"
           f"{o['full_rate']*100:>9.1f}%")
     if not behavior:
-        print("\nNo behaviour labels — follow-gated coverage and the behaviour "
+        print("\nNo behavior labels — behavior-conditioned coverage and the behavior "
               "profile were skipped. Add --with-behavior.", file=sys.stderr)
     if not provenance:
         print("No provenance labels — the claim-side split was skipped. "

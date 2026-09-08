@@ -1,8 +1,10 @@
-# Published results
+# Results
 
 [PRISM](https://arxiv.org/abs/2606.09563), EMNLP 2026 Main Conference.
 The main PRISM rows use Qwen3.5-9B and layer-16 activations from up to the
-last 128 response tokens. Baseline target models are labelled in the table.
+last 128 response tokens. The main benchmark and indirect prompt injection
+sections report results from the paper. The behavior analysis is a post-paper
+extension and is marked separately below.
 
 ## Main results
 
@@ -46,27 +48,32 @@ output metrics.
 
 ## Indirect prompt injection benchmarks
 
-A second domain, not part of the paper's Table 1: 24,953 successfully evaluated
-indirect-injection records built from BIPIA, LLMail, and InjecAgent (see
-[../DATA_CARD.md](../DATA_CARD.md)). Run with `qwen3.5-9b-grpo` and scored by
-the same `gemma-4-31B-it` judge.
+The paper also evaluates 24,953 successfully processed indirect prompt
+injection records built from BIPIA, LLMail-Inject, and InjecAgent (see
+[../DATA_CARD.md](../DATA_CARD.md)). These results use `qwen3.5-9b-grpo` and
+the same `gemma-4-31B-it` scoring judge.
 
 | Source | n | Coverage | Hallucination | Full-recovery rate |
 |---|---|---|---|---|
 | BIPIA | 13,901 | 0.781 | 0.036 | 50.8% |
-| LLMail | 9,998 | 0.772 | 0.047 | 45.5% |
+| LLMail-Inject | 9,998 | 0.772 | 0.047 | 45.5% |
 | InjecAgent | 1,054 | **0.667** | 0.026 | **20.2%** |
 | **Overall** | **24,953** | **0.772** | **0.040** | — |
 
-InjecAgent coverage is approximately 0.11 lower than BIPIA and LLMail. Most
-errors on that subset are partial recoveries rather than complete misses.
+InjecAgent coverage is approximately 0.11 lower than BIPIA and LLMail-Inject.
+Most errors on that subset are partial recoveries rather than complete misses.
 
-**Conditioned on the attack actually firing**, adversarial-instruction coverage
-is 94.5% / 94.1% / 81.1% (any / avg / all, n = 9,494 rows), against 98.7% /
-98.6% / 93.7% on benign instructions (n = 21,216). The attack success rate over
-the corpus is 33.2%.
+## Post-paper behavior analysis
 
-### Instruction presence and model behavior
+This optional analysis was added after the paper. It uses a separate behavior
+judge to label whether the target model carried out each ground-truth
+instruction. It does not change the paper results above, the released
+checkpoints, or the default evaluation metrics.
+
+Conditioned on the attack being followed, adversarial-instruction coverage is
+94.5% / 94.1% / 81.1% (any / average / all, n = 9,494 rows), compared with
+98.7% / 98.6% / 93.7% on followed benign instructions (n = 21,216). The
+adversarial-instruction follow rate over the corpus is 33.2%.
 
 The behavioral analysis indicates stronger recovery for instructions the model
 followed, with weaker but nonzero recovery for instructions that were present
@@ -80,16 +87,15 @@ but not followed:
 - 46.5% of injections that the model did not act on are still fully recovered.
 - Claim-side, 89.3% of the 66k claims correspond to instructions present in the
   prompt (69.4% executed, 16.1% refused-but-mentioned, 3.7% invisible in the
-  response), against 3.1% pure behaviour description and 7.6% fabrication.
+  response), against 3.1% pure behavior description and 7.6% fabrication.
 
-The first three bullets come from the calibrated FOLLOWED judge
+The first three bullets come from the calibrated behavior judge
 (`prism_eval/scoring/behavior_judge.py`, judge-vs-human κ = 0.734 and
-human-vs-human κ = 0.786 — see [../DATA_CARD.md](../DATA_CARD.md)). The
-claim-side split comes from `prism_eval/scoring/claim_provenance.py`, which has
-no gold set of its own and should be read as indicative.
-
-Neither judge is part of the default scoring path, and no Table 1 number depends
-on them. They are applied to saved per-record outputs after evaluation.
+human-vs-human κ = 0.786). The claim-side split comes from
+`prism_eval/scoring/claim_provenance.py`, which has no gold set and should be
+read as indicative. Both are optional post-processing steps applied to saved
+evaluation outputs. See [Behavior analysis](BEHAVIOR_ANALYSIS.md) for the
+method and commands.
 
 ## Ablations
 

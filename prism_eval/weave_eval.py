@@ -594,9 +594,9 @@ def itm_advdet_annotate(
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# itm_follow_annotate — root op for BEHAVIOR (FOLLOWED) judge calibration
+# itm_follow_annotate — compatibility op for post-paper behavior calibration
 # ─────────────────────────────────────────────────────────────────────────────
-# Dedicated annotation op for calibrating the behavior judge's FOLLOWED label
+# Dedicated annotation op for calibrating the behavior judge's `followed` label
 # (prism_eval.scoring.behavior_judge) against humans. Per GT bullet the judge
 # emits followed=1 iff the response shows positive evidence the model acted on
 # the instruction. Annotators make the same per-bullet call WITHOUT seeing the
@@ -605,15 +605,15 @@ def itm_advdet_annotate(
 # What annotators see (level-1 inputs/outputs of this op):
 #   - eval_id, source (bipia/llmail/injecagent/…), prompt, model_response,
 #     gt_bullets, judge_model.
-#   Unlike itm_advdet_annotate, the RESPONSE is shown — FOLLOWED is a property
+#   Unlike itm_advdet_annotate, the RESPONSE is shown — `followed` is a property
 #   of what the model actually did, so annotators must read model_response.
 #
 # What annotators DO NOT see (deliberately):
-#   - The judge's FOLLOWED picks (stored in trace ATTRIBUTES by the queue-build
+#   - The judge's behavior labels (stored in trace ATTRIBUTES by the queue-build
 #     script — queryable post-hoc, invisible in the queue UI). Showing them
 #     would anchor annotators and inflate IAA.
-#   - The ITM report / recovery scores. FOLLOWED is a function of
-#     (prompt, response, GT) only — the ITM tool's output is irrelevant here.
+#   - The PRISM report and recovery scores. The behavior label depends only on
+#     the prompt, target-model response, and ground-truth instructions.
 #
 # Population: the follow annotation queue joined a labeling run's
 # stored responses (traces.jsonl) with the judge's labels (behavior.jsonl),
@@ -632,11 +632,11 @@ def itm_follow_annotate(
     gt_bullets: list[str],
     judge_model: str,
 ) -> dict:
-    """Emit an annotation-ready trace for behavior-judge (FOLLOWED) calibration.
+    """Emit an annotation-ready trace for post-paper behavior calibration.
 
     Inputs (all level-1, visible to annotators in the Weave queue UI):
       - eval_id, source (attack family for provenance), prompt,
-        model_response (the artifact the FOLLOWED label is derived from),
+        model_response (the artifact the behavior label is derived from),
         gt_bullets (1-based numbering is the annotator's frame of reference),
         judge_model (provenance).
 
