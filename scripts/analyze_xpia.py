@@ -453,7 +453,7 @@ TAXONOMY_FIELDS = ("difficulty", "attacker_goal", "injection_position",
 
 def load_suite(path: Path) -> dict[str, dict]:
     """eval_id -> {prompt, instructions, taxonomy...} from the suite file."""
-    raw = json.loads(path.read_text())
+    raw = json.loads(path.read_text(encoding="utf-8"))
     records = raw["evals"] if isinstance(raw, dict) and "evals" in raw else raw
     out = {}
     for rec in records:
@@ -474,7 +474,7 @@ def load_rows(rows_path: Path, suite: dict[str, dict]) -> list[dict]:
     """Rebuild the analyzer's row schema from an offline evaluation."""
     rows = []
     missing_suite = 0
-    for line in rows_path.read_text().splitlines():
+    for line in rows_path.read_text(encoding="utf-8").splitlines():
         if not line.strip():
             continue
         raw = json.loads(line)
@@ -525,7 +525,7 @@ def _cache_load(path: Path) -> dict[str, dict]:
     if not path.exists():
         return {}
     return {json.loads(l)["eval_id"]: json.loads(l)
-            for l in path.read_text().splitlines() if l.strip()}
+            for l in path.read_text(encoding="utf-8").splitlines() if l.strip()}
 
 
 def _cache_append(path: Path, record: dict) -> None:
@@ -719,7 +719,7 @@ def main() -> int:
         analysis["provenance_by_source"] = {s: provenance_agg(by_source[s]) for s in sources}
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(json.dumps(analysis, indent=2) + "\n")
+    args.out.write_text(json.dumps(analysis, indent=2) + "\n", encoding="utf-8")
 
     o = analysis["overall"]
     print(f"\n{'source':14}{'n':>8}{'coverage':>11}{'halluc':>9}{'full-rec':>10}")

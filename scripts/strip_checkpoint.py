@@ -10,8 +10,8 @@ weights themselves. `PrismRunner` reads exactly three keys:
     projection_state   the activation -> embedding projection
 
 Everything else (optimizer_state, scheduler_state, reward_tracker_state,
-encoder_state, wandb_run_id) is training bookkeeping that no one downloading
-the release can use. Dropping it takes the published set from ~4.2 GB to
+encoder_state, wandb_run_id) is training bookkeeping not needed for inference.
+Dropping it takes the published set from ~4.2 GB to
 ~1.4 GB with bit-identical weights.
 
     python scripts/strip_checkpoint.py checkpoints/*.pt --out-dir dist/
@@ -35,7 +35,8 @@ import torch
 KEEP = ("config", "lora_state", "projection_state", "opt_step", "val_reward", "best_reward")
 
 # `config` is training provenance as well as architecture, so it carries cluster
-# paths, dataset locations and W&B coordinates that should not leave the lab.
+# paths, dataset locations and W&B coordinates that should not be included in a
+# public checkpoint.
 # The runner needs the architecture only, so anything that looks like a local
 # path or a tracking coordinate is dropped. Scrubbing by value rather than by an
 # allowlist keeps unknown-but-needed architecture keys intact.

@@ -57,7 +57,6 @@ The behavior labels support an optional analysis added after the paper.
 |---|---|
 | `coverage_gold.jsonl` | 93 reports / 373 instruction labels, with PRISM reports, judge scores, reconciled gold labels, and independent human labels where available |
 | `advdet_gold.jsonl` | 50 records with gold adversarial-instruction indices and judge selections |
-| `coverage_calibration.json` | Stored coverage and adversarial-identification agreement report |
 | `follow_snapshot.jsonl` | 184 annotation records for the post-paper behavior analysis: 92 calls labeled by two annotators |
 | `follow_calibration.json` | Stored behavior-judge agreement report |
 
@@ -77,10 +76,9 @@ and 170 labels (§G, Table 4). Weighted κ uses quadratic weights.
 The additional `hard` subset contains 25 reports selected for difficult
 hallucination cases; its judge-versus-gold weighted κ is 0.635.
 
-Calculate agreement from the supplied labels, or score another judge:
+Score another judge against the supplied labels:
 
 ```bash
-uv run python scripts/calibrate_judge.py
 uv run python scripts/calibrate_judge.py --rescore --round pilot
 ```
 
@@ -92,6 +90,10 @@ Annotators selected the ground-truth instructions carrying adversarial intent,
 using [RUBRIC_ADVDET.md](RUBRIC_ADVDET.md).
 The judge's selected set matches gold exactly on 49 of 50 records.
 Sampling strata are defined in [configs/advdet_queue_spec.json](configs/advdet_queue_spec.json).
+
+```bash
+uv run python scripts/calibrate_advdet.py -i data/calibration/advdet_gold.jsonl
+```
 
 ### Post-paper behavior labels
 
@@ -147,16 +149,9 @@ uv run python scripts/fetch_xpia_evals.py --count 13950 --benign-count 200 \
   -o data/eval_suite_xpia.json
 ```
 
-The rebuild preserves the benchmark families, schema, and per-source counts,
-but not the original row selection or fine-grained taxonomy used for the
-reported supplemental results. It therefore exercises the same evaluation
-pipeline but does not reproduce those result values exactly.
-
-The reconstruction follows the source-loading structure described by
-[Fomin (2026)](https://arxiv.org/abs/2602.14161) and
-[maxf-zn/prompt-mining](https://github.com/maxf-zn/prompt-mining).
-The build script adds coarse deterministic taxonomy fields required by the
-suite builder. Benchmark text remains subject to its upstream terms.
+The build script normalizes the three upstream datasets into the shared
+evaluation schema and adds deterministic taxonomy fields used by the suite
+builder. Benchmark text remains subject to its upstream terms.
 
 ## Limitations
 

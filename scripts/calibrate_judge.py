@@ -1,31 +1,15 @@
 #!/usr/bin/env python3
-"""Measure how well a judge agrees with the human gold labels on instruction coverage.
+"""Measure agreement between a scoring judge and human coverage labels.
 
-`data/calibration/coverage_gold.jsonl` holds 93 ITM reports scored claim by
-claim by two annotators who then sat together and reconciled every disagreement
-into a single gold label. Each record also carries the prompt, the target
-model's response, and the scores the published judge gave. That is enough to
-calibrate *any* judge:
+The supplied JSONL contains prompts, target-model responses, PRISM reports,
+judge scores, independent annotations, and reconciled gold labels. To score a
+different judge against the pilot labels:
 
-    # 1. Reproduce the shipped numbers — no endpoint, no GPU, instant.
-    python scripts/calibrate_judge.py
+    uv run python scripts/calibrate_judge.py --rescore --round pilot
 
-    # 2. Score your own judge against the same labels.
-    export PRISM_EVAL_MODEL=... PRISM_EVAL_BASE_URL=... PRISM_EVAL_API_KEY=...
-    python scripts/calibrate_judge.py --rescore --round pilot
-
-**judge vs gold** is the headline number. The **human-vs-human** row is the
-ceiling for context: two trained annotators working from the same rubric agree
-only to that level *before* reconciling, so a judge approaching it is doing as
-well as independent human labelling does.
-
-Nothing here needs Weave, a W&B account, or a network connection — the labels
-ship as files.
-
-Kappa is reported with quadratic weights on the ordinal scale
-(0.0 missed, 0.5 partial, 1.0 covered), which is what the paper reports, and
-unweighted alongside it. On these labels the two differ a lot (0.82 vs 0.63),
-so a number without its convention attached is meaningless.
+Set PRISM_EVAL_MODEL, PRISM_EVAL_BASE_URL, and PRISM_EVAL_API_KEY before
+rescoring. Agreement is reported as quadratic-weighted and unweighted Cohen's
+kappa, plus Gwet's AC2.
 """
 
 from __future__ import annotations
@@ -42,8 +26,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 REPO = Path(__file__).resolve().parent.parent
 SNAPSHOT = REPO / "data" / "calibration" / "coverage_gold.jsonl"
-FROZEN = REPO / "data" / "calibration" / "coverage_calibration.json"
-
 ROUNDS = ("pilot", "hard", "hard2")
 ANNOTATORS = ("annotator_a", "annotator_b")
 
@@ -140,7 +122,7 @@ def main() -> int:
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
     ap.add_argument("--round", choices=[*ROUNDS, "all"], default="pilot",
-                    help="Gold round to score (default: pilot — the one the paper reports)")
+                    help="Gold round to score (default: pilot, as reported in the paper)")
     ap.add_argument("--rescore", action="store_true",
                     help="Re-run a judge over the records instead of using the shipped scores. "
                          "Needs PRISM_EVAL_MODEL / _BASE_URL / _API_KEY.")
@@ -151,7 +133,11 @@ def main() -> int:
     ap.add_argument("-o", "--output", type=Path, help="Write the full report as JSON here")
     args = ap.parse_args()
 
-    rows = [json.loads(l) for l in SNAPSHOT.read_text().splitlines() if l.strip()]
+    rows = [
+        json.loads(line)
+        for line in SNAPSHOT.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
     if args.round != "all":
         rows = [r for r in rows if r["round"] == args.round]
     if args.limit:
@@ -206,7 +192,7 @@ def main() -> int:
           "kappa_u = unweighted.")
 
     if args.output:
-        args.output.write_text(json.dumps(report, indent=2) + "\n")
+        args.output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
         print(f"\nWrote {args.output}")
     return 0
 

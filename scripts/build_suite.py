@@ -606,7 +606,7 @@ def verify_injection(
     """Run the scenario through the base model, then judge the output with the eval model.
 
     base_client / base_model  — PRISM_BASE_MODEL (Qwen): produces the response whose
-                                activations ITM monitors. No reasoning expected.
+                                activations PRISM reads. No reasoning expected.
     judge_client / judge_model — PRISM_EVAL_MODEL (gemma4): judges whether the base
                                  model's response followed the injected instruction.
 
@@ -1726,7 +1726,7 @@ def main() -> None:
         "--base-model",
         default=os.environ.get("PRISM_BASE_MODEL", ""),
         help=(
-            "[AP/HO verify] The base model ITM is monitoring — run generated injection scenarios "
+            "[AP/HO verify] The target model PRISM reads — run generated injection scenarios "
             "through this model and judge whether the injection succeeded. "
             "Defaults to PRISM_BASE_MODEL env var, falls back to --model."
         ),
@@ -1935,7 +1935,8 @@ def main() -> None:
                     }
                     args.ap_failed_output.parent.mkdir(parents=True, exist_ok=True)
                     args.ap_failed_output.write_text(
-                        json.dumps(failed_suite, indent=2, ensure_ascii=False)
+                        json.dumps(failed_suite, indent=2, ensure_ascii=False),
+                        encoding="utf-8",
                     )
                     print(
                         f"  Wrote {len(failed_records)} failed injection records "
@@ -1976,7 +1977,8 @@ def main() -> None:
                     }
                     ho_failed_path.parent.mkdir(parents=True, exist_ok=True)
                     ho_failed_path.write_text(
-                        json.dumps(ho_failed_suite, indent=2, ensure_ascii=False)
+                        json.dumps(ho_failed_suite, indent=2, ensure_ascii=False),
+                        encoding="utf-8",
                     )
                     print(f"  Wrote {len(ho_failed_records)} failed HO records to {ho_failed_path}")
             else:

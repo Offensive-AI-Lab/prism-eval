@@ -319,7 +319,7 @@ def _build_hint(label: str, attacker_goal: Any, taxonomy_rationale: Any) -> str:
     if goal and goal != "nan":
         hint += f"\nThe attacker's goal is: {goal}."
     if rationale and rationale != "nan":
-        hint += f"\nReviewer note on the injection: {rationale[:400]}"
+        hint += f"\nAnnotation note on the injection: {rationale[:400]}"
     return hint
 
 
@@ -550,7 +550,7 @@ def load_progress(path: Path) -> dict[str, dict]:
     if not path or not path.exists():
         return {}
     done = {}
-    for line in path.read_text().splitlines():
+    for line in path.read_text(encoding="utf-8").splitlines():
         line = line.strip()
         if line:
             rec = json.loads(line)
@@ -657,7 +657,7 @@ def main() -> None:
             rec = _work(row)
             records.append(rec)
             if progress_path:
-                with progress_path.open("a") as f:
+                with progress_path.open("a", encoding="utf-8") as f:
                     f.write(json.dumps(rec) + "\n")
             print(f"  [{i+1}/{len(new_rows)}] {rec['eval_id']}")
     else:
@@ -667,14 +667,14 @@ def main() -> None:
                 rec = fut.result()
                 records.append(rec)
                 if progress_path:
-                    with progress_path.open("a") as f:
+                    with progress_path.open("a", encoding="utf-8") as f:
                         f.write(json.dumps(rec) + "\n")
                 print(f"  [{i+1}/{len(new_rows)}] {rec['eval_id']}")
 
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     suite = {"schema_version": "2.0", "evals": records}
-    out_path.write_text(json.dumps(suite, indent=2))
+    out_path.write_text(json.dumps(suite, indent=2), encoding="utf-8")
     print(f"Wrote {len(records)} records -> {out_path}")
 
 

@@ -142,7 +142,7 @@ def _mean(xs: list[float]) -> float:
 
 def _load_snapshot(path: Path) -> list[dict]:
     rows: list[dict] = []
-    with path.open() as f:
+    with path.open(encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if line:
@@ -402,7 +402,7 @@ def main() -> int:
 
     if args.out:
         args.out.parent.mkdir(parents=True, exist_ok=True)
-        args.out.write_text(json.dumps(report, indent=2))
+        args.out.write_text(json.dumps(report, indent=2), encoding="utf-8")
         print(f"\nWrote {args.out}", file=sys.stderr)
     return 0
 

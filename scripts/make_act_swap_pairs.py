@@ -4,7 +4,7 @@
 For each single-turn record in the suite, pick a donor record from the same
 setting (seeded shuffle + rotate-by-one, so nobody is their own donor). At
 extraction time (PRISM_EVAL_ACT_CONTEXT=swapped) the donor's prompt is placed
-behind the *fixed* base response; whichever instruction the ITM report then
+behind the *fixed* base response; whichever instruction the PRISM report then
 names tells us whether the decoder reads response-state content (original)
 or attention-routed prompt content (donor).
 
@@ -69,7 +69,7 @@ def build_pairs(records: list[dict], seed: int) -> dict[str, dict]:
 @click.option("--donor-suite-out", type=click.Path(path_type=Path), default=None)
 @click.option("--seed", type=int, default=0, show_default=True)
 def main(suite_path: Path, pairs_out: Path, donor_suite_out: Path | None, seed: int) -> None:
-    raw = json.loads(suite_path.read_text())
+    raw = json.loads(suite_path.read_text(encoding="utf-8"))
     evals = raw["evals"]
 
     single_turn = [r for r in evals if r.get("prompt")]
@@ -81,10 +81,14 @@ def main(suite_path: Path, pairs_out: Path, donor_suite_out: Path | None, seed: 
     assert all(eid != p["donor_eval_id"] for eid, p in pairs.items()), "self-pair found"
 
     pairs_out.parent.mkdir(parents=True, exist_ok=True)
-    pairs_out.write_text(json.dumps(
-        {"_suite": str(suite_path), "_seed": seed, "pairs": pairs},
-        indent=2, ensure_ascii=False,
-    ))
+    pairs_out.write_text(
+        json.dumps(
+            {"_suite": str(suite_path), "_seed": seed, "pairs": pairs},
+            indent=2,
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
     click.echo(f"Wrote {len(pairs)} pairs -> {pairs_out}")
 
     if donor_suite_out is not None:
@@ -112,7 +116,9 @@ def main(suite_path: Path, pairs_out: Path, donor_suite_out: Path | None, seed: 
         )
         donor_suite["evals"] = donor_evals
         donor_suite_out.parent.mkdir(parents=True, exist_ok=True)
-        donor_suite_out.write_text(json.dumps(donor_suite, indent=2, ensure_ascii=False))
+        donor_suite_out.write_text(
+            json.dumps(donor_suite, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
         click.echo(f"Wrote donor suite ({len(donor_evals)} records) -> {donor_suite_out}")
 
 

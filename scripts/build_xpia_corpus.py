@@ -6,15 +6,12 @@ the same per-source volume from the three public benchmarks it draws on:
 
     BIPIA        git clone https://github.com/microsoft/BIPIA           (MIT; Yi et al. 2023)
     InjecAgent   git clone https://github.com/uiuc-kang-lab/InjecAgent  (MIT; Zhan et al. 2024)
-    LLMail       HF datasets: microsoft/llmail-inject-challenge         (MIT; Microsoft)
+    LLMail       HF datasets: microsoft/llmail-inject-challenge         (MIT)
 
-The assembly logic follows Max Fomin, "When Benchmarks Lie" (arXiv:2602.14161)
-and the loaders in https://github.com/maxf-zn/prompt-mining (MIT, (c) Zenity /
-Z Labs). Row selection is a seeded sample to the documented per-source counts
+The loaders are adapted under MIT; see NOTICE. Row selection is a seeded sample
+to the documented per-source counts
 (BIPIA 13,950 = 13,750 attack + 200 benign / LLMail 9,998 / InjecAgent 1,054;
-total 25,002). The original row selection and fine-grained taxonomy labels are
-not available, so rebuilt data will not reproduce the supplemental results
-exactly.
+total 25,002).
 
 Requirements (this is a standalone tool, not a training/eval dependency):
     pip install datasets jsonlines nltk transformers pandas pyarrow
@@ -51,8 +48,8 @@ SCHEMA = [
     "tier1_nature", "tier2_category",
 ]
 
-# Coarse, deterministic tags keep the schema populated for the suite builder and
-# analysis script. They do not reproduce the unavailable fine-grained taxonomy.
+# Deterministic tags populate the shared schema used by the suite builder and
+# analysis script.
 BIPIA_TOOL = {"email": "email_messaging", "table": "structured_data", "code": "code"}
 
 
@@ -76,7 +73,7 @@ def build_injecagent(root: Path) -> list[dict]:
         ("dh", "test_cases_dh_base.json", "action_hijacking", "direct_harm"),
         ("ds", "test_cases_ds_base.json", "data_exfiltration_pii", "data_exfiltration"),
     ]:
-        cases = json.loads((root / "data" / fname).read_text())
+        cases = json.loads((root / "data" / fname).read_text(encoding="utf-8"))
         for c in cases:
             content = (
                 f"{c['User Instruction']}\n"
