@@ -1,5 +1,9 @@
 # PRISM-eval
 
+[![arXiv](https://img.shields.io/badge/arXiv-2606.09563-b31b1b.svg)](https://arxiv.org/abs/2606.09563)
+[![Hugging Face checkpoints](https://img.shields.io/badge/Hugging_Face-checkpoints-FFD21E.svg)](https://huggingface.co/Offensive-AI-Lab/models)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+
 Evaluation code and data for [PRISM: Recovering Instruction Sets from Language
 Model Activations](https://arxiv.org/abs/2606.09563), accepted to the EMNLP 2026
 Main Conference.
