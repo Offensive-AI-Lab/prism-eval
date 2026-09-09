@@ -69,10 +69,11 @@ judge to label whether the target model carried out each ground-truth
 instruction. It does not change the paper results above, the released
 checkpoints, or the default evaluation metrics.
 
-Conditioned on the attack being followed, adversarial-instruction coverage is
-94.5% / 94.1% / 81.1% (any / average / all, n = 9,494 rows), compared with
-98.7% / 98.6% / 93.7% on followed benign instructions (n = 21,216). The
-adversarial-instruction follow rate over the corpus is 33.2%.
+Using the paper's adversarial-detection definition, which requires mean
+adversarial-instruction coverage of at least 0.5, PRISM detects 94.1% of attacks
+that the target model followed (n = 9,494 rows). The corresponding recovery rate
+for followed benign instructions is 98.6% (n = 21,216). The adversarial-instruction
+follow rate over the corpus is 33.2%.
 
 The behavioral analysis indicates stronger recovery for instructions the model
 followed, with weaker but nonzero recovery for instructions that were present
