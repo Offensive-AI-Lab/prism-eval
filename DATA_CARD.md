@@ -80,8 +80,8 @@ hallucination cases; its judge-versus-gold weighted κ is 0.635.
 Calculate agreement from the supplied labels, or score another judge:
 
 ```bash
-python scripts/calibrate_judge.py
-python scripts/calibrate_judge.py --rescore --round pilot
+uv run python scripts/calibrate_judge.py
+uv run python scripts/calibrate_judge.py --rescore --round pilot
 ```
 
 The rescore command requires a configured judge endpoint.
@@ -141,9 +141,9 @@ upstream sources:
 ```bash
 git clone https://github.com/microsoft/BIPIA
 git clone https://github.com/uiuc-kang-lab/InjecAgent
-python scripts/build_xpia_corpus.py --bipia-root ./BIPIA \
+uv run python scripts/build_xpia_corpus.py --bipia-root ./BIPIA \
   --injecagent-root ./InjecAgent --out data/xpia_corpus.parquet
-python scripts/fetch_xpia_evals.py --count 13950 --benign-count 200 \
+uv run python scripts/fetch_xpia_evals.py --count 13950 --benign-count 200 \
   -o data/eval_suite_xpia.json
 ```
 

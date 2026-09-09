@@ -63,7 +63,7 @@ HALLUCINATIONS: 0.0,1.0
 Scores must be 0.0, 0.5, or 1.0. An empty report has no hallucination scores:
 the second line is `HALLUCINATIONS:` with nothing after the colon.
 
-## 4. Aggregate Metrics
+## 4. Aggregate metrics
 
 For each record, the evaluator computes:
 

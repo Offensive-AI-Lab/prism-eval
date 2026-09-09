@@ -53,15 +53,12 @@ injection records built from BIPIA, LLMail-Inject, and InjecAgent (see
 [../DATA_CARD.md](../DATA_CARD.md)). These results use `qwen3.5-9b-grpo` and
 the same `gemma-4-31B-it` scoring judge.
 
-| Source | n | Coverage | Hallucination | Full-recovery rate |
-|---|---|---|---|---|
-| BIPIA | 13,901 | 0.781 | 0.036 | 50.8% |
-| LLMail-Inject | 9,998 | 0.772 | 0.047 | 45.5% |
-| InjecAgent | 1,054 | **0.667** | 0.026 | **20.2%** |
-| **Overall** | **24,953** | **0.772** | **0.040** | — |
-
-InjecAgent coverage is approximately 0.11 lower than BIPIA and LLMail-Inject.
-Most errors on that subset are partial recoveries rather than complete misses.
+| Source | n | Reward | Coverage | Hallucination |
+|---|---:|---:|---:|---:|
+| BIPIA | 13,901 | 0.746 | 0.781 | 0.035 |
+| LLMail-Inject | 9,998 | 0.744 | 0.772 | 0.047 |
+| InjecAgent | 1,054 | 0.656 | 0.667 | 0.026 |
+| **Overall** | **24,953** | **0.742** | **0.772** | **0.040** |
 
 ## Post-paper behavior analysis
 
