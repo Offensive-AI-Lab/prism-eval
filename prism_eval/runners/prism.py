@@ -624,18 +624,18 @@ class PrismRunner:
             raise RuntimeError("Call setup() before run_eval()")
 
         max_act_tokens = _env_int("PRISM_EVAL_MAX_ACT_TOKENS", self._cfg.get("max_act_tokens", 128))
-        oracle_max_new_tokens = self._cfg.get("eval_generation_max_new_tokens", 256)
+        itm_report_max_new_tokens = self._cfg.get("eval_generation_max_new_tokens", 256)
         system_prompt = self._cfg.get("system_prompt", "You are a helpful assistant.")
 
         # Determine if single-turn or multi-turn. prompt_messages records are
         # single-generation conversations and take the single-turn path.
         if eval_record.prompt_turns is not None and eval_record.prompt_messages is None:
             return self._run_multi_turn(
-                eval_record, system_prompt, max_act_tokens, oracle_max_new_tokens,
+                eval_record, system_prompt, max_act_tokens, itm_report_max_new_tokens,
             )
         else:
             return self._run_single_turn(
-                eval_record, system_prompt, max_act_tokens, oracle_max_new_tokens,
+                eval_record, system_prompt, max_act_tokens, itm_report_max_new_tokens,
             )
 
     def _build_messages(
@@ -711,7 +711,7 @@ class PrismRunner:
         eval_record: EvalRecord,
         system_prompt: str,
         max_act_tokens: int,
-        oracle_max_new_tokens: int,
+        itm_report_max_new_tokens: int,
     ) -> EvalResult:
         """Single-turn: generate response, extract activations, produce ITM report."""
         messages = self._build_messages(eval_record, system_prompt)
@@ -730,7 +730,7 @@ class PrismRunner:
         # Empty activation window (e.g. a chunk beyond the response end) →
         # empty report; see _run_batch_single_turn.
         if act_tokens > 0:
-            itm_report = self._generate_itm_report(activations, max_new_tokens=oracle_max_new_tokens)
+            itm_report = self._generate_itm_report(activations, max_new_tokens=itm_report_max_new_tokens)
         else:
             itm_report = ""
 
@@ -752,7 +752,7 @@ class PrismRunner:
         eval_record: EvalRecord,
         system_prompt: str,
         max_act_tokens: int,
-        oracle_max_new_tokens: int,
+        itm_report_max_new_tokens: int,
     ) -> EvalResult:
         """Multi-turn: build conversation incrementally, extract from final turn."""
         turns = eval_record.prompt_turns or []
@@ -786,7 +786,7 @@ class PrismRunner:
                     eval_id=eval_record.eval_id,
                 )
                 itm_report = self._generate_itm_report(
-                    activations, max_new_tokens=oracle_max_new_tokens,
+                    activations, max_new_tokens=itm_report_max_new_tokens,
                 )
                 per_turn_reports.append(itm_report)
             else:
@@ -867,7 +867,7 @@ class PrismRunner:
         from prism_eval.runners.models import norm_match
 
         max_act_tokens = _env_int("PRISM_EVAL_MAX_ACT_TOKENS", self._cfg.get("max_act_tokens", 128))
-        oracle_max_new = self._cfg.get("eval_generation_max_new_tokens", 256)
+        itm_report_max_new = self._cfg.get("eval_generation_max_new_tokens", 256)
         base_max_new = _env_int(
             "PRISM_EVAL_BASE_GEN_MAX_NEW_TOKENS",
             self._cfg.get("base_generation_max_new_tokens", 196),
@@ -912,7 +912,7 @@ class PrismRunner:
         itm_reports = [""] * len(records)
         if nonempty_idx:
             gen_reports = self._batched_generate_itm_reports(
-                [softs[i] for i in nonempty_idx], oracle_max_new,
+                [softs[i] for i in nonempty_idx], itm_report_max_new,
             )
             for i, rep in zip(nonempty_idx, gen_reports):
                 itm_reports[i] = rep
