@@ -59,7 +59,7 @@ Compare with the [paper results](docs/RESULTS.md). The
 run-to-run variation; [configs/template.yaml](configs/template.yaml) lists
 configuration options.
 
-## Checkpoints and baselines
+## Checkpoints
 
 | Checkpoint | Target model | Configuration |
 |---|---|---|
@@ -71,11 +71,20 @@ configuration options.
 Omit `--only` from the download command to fetch all four checkpoints. Target
 model weights are downloaded separately; set `HF_TOKEN` for gated models.
 
-The [text-only control](configs/main/text_only_baseline.yaml) reads the final
-128 response tokens without activations and calls a separate language-model
-endpoint. LatentQA and Activation Oracles were evaluated using their upstream
-implementations; code revisions and checkpoint links are listed in
-[Results](docs/RESULTS.md).
+## Baselines
+
+The exact Qwen3.5-9B adapters used for the LatentQA and Activation Oracles
+comparisons are released on Hugging Face:
+
+- [LatentQA adapter](https://huggingface.co/Offensive-AI-Lab/prism-baseline-latentqa-qwen3.5-9b)
+- [Activation Oracles adapter](https://huggingface.co/Offensive-AI-Lab/prism-baseline-activation-oracles-qwen3.5-9b)
+
+These are baseline artifacts, not PRISM checkpoints. Their implementations are
+adapted from the upstream projects; [Results](docs/RESULTS.md) records the code
+revisions and the upstream artifacts used for the original-model rows. The
+[text-only control](configs/main/text_only_baseline.yaml) reads the final 128
+response tokens without activations and calls a separate language-model
+endpoint.
 
 ## Evaluation data
 

@@ -26,19 +26,21 @@ BN = Benign · BC = Behavioral Constraints · HO = Hidden Objectives · AP = Adv
 Adversarial-instruction detection is 0.844 on HO and 0.676 on AP, for a mean of
 0.760 across the two adversarial settings.
 
-## Upstream baselines
+## Baselines
 
-LatentQA and Activation Oracles were evaluated using their upstream
-implementations and the same scoring judge:
+All baseline outputs were evaluated with the same scoring judge as PRISM. The
+Qwen3.5-9B rows use the exact released adapters:
 
-- **LatentQA** (Pan et al., 2024) — [aypan17/latentqa](https://github.com/aypan17/latentqa)
-  @ `a2dcb6f`, decoder [`aypan17/latentqa_llama-3-8b-instruct`](https://huggingface.co/aypan17/latentqa_llama-3-8b-instruct)
-- **Activation Oracles** (Karvonen et al., 2025) —
-  [adamkarvonen/activation_oracles](https://github.com/adamkarvonen/activation_oracles)
-  @ `55f153f`, adapters from the
-  [Activation Oracles collection](https://huggingface.co/collections/adamkarvonen/activation-oracles)
+- [LatentQA adapter](https://huggingface.co/Offensive-AI-Lab/prism-baseline-latentqa-qwen3.5-9b)
+- [Activation Oracles adapter](https://huggingface.co/Offensive-AI-Lab/prism-baseline-activation-oracles-qwen3.5-9b)
 
-Each was run against its own target model as labelled in the table above.
+The implementations are adapted from [aypan17/latentqa](https://github.com/aypan17/latentqa)
+at `a2dcb6f` and
+[adamkarvonen/activation_oracles](https://github.com/adamkarvonen/activation_oracles)
+at `55f153f`. The original-model rows use the upstream published artifacts:
+
+- **LatentQA (Llama3-8B):** [`aypan17/latentqa_llama-3-8b-instruct`](https://huggingface.co/aypan17/latentqa_llama-3-8b-instruct)
+- **Activation Oracles (Qwen3-8B):** adapters from the [Activation Oracles collection](https://huggingface.co/collections/adamkarvonen/activation-oracles)
 
 ## Reproduction
 
