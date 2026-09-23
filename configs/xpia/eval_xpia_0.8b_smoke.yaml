@@ -1,0 +1,31 @@
+# XPIA pipeline check for the 0.8B PRISM (8 records: bipia/llmail/injecagent).
+experiment:
+  name: prism_xpia_0.8b_smoke
+  notes: "0.8B PRISM (Qwen3.5-0.8B, hook 12) on the XPIA smoke set."
+  tags: [xpia, smoke, "0.8b"]
+  weave_project: null
+
+suite:
+  path: data/eval_suite_xpia_smoke.json
+  settings: [AP]
+
+runner:
+  type: prism
+  display_name: "PRISM (Qwen3.5-0.8B, GRPO)"
+  checkpoint: /groups/yisroel_dtgroup/Users/pankajak/prism-08b-grpo/ckpts/grpo-qwen3.5-0.8b-L12-midkl/prism-qwen3.5-0.8b-grpo.pt
+  device: cuda
+
+scoring:
+  bertscore: false
+  judge_llm: true
+  adversarial_detection: true
+
+annotation:
+  emit_trace: false
+  op_name: itm_annotate
+  batch_size: 8
+  max_batch_tokens: 16384
+
+evaluation:
+  evaluation_name: prism_xpia_0.8b_smoke
+  publish_leaderboard: false
