@@ -58,6 +58,12 @@ MANIFEST: dict[str, tuple[str, str, str]] = {
         "390M",
         "PRISM, GRPO-tuned. Target model: Ministral-3-8B, hook layer 17.",
     ),
+    # ── Qwen3.5-0.8B target model: experimental small-scale variant ──────
+    "prism-qwen3.5-0.8b-grpo.pt": (
+        "9909e124ad2b67b2d2b0d1a94f2cbabf578157efda6d5bddb1c9f1cc6bc51d95",
+        "162M",
+        "PRISM (experimental), GRPO-tuned. Target model: Qwen3.5-0.8B, hook layer 12.",
+    ),
 }
 
 

@@ -1,0 +1,35 @@
+# PRISM for Qwen3.5-0.8B — experimental small-scale variant (not a main paper model).
+#
+# prism runner: hook layer 12, project the last 128 response-token activations into
+# embedding space, prepend as soft tokens, decode with LoRA. Same architecture as the
+# 9B configs; the target model is smaller. Faithful-coverage ceiling ~0.54 on the suite.
+
+experiment:
+  name: qwen3.5-0.8b-grpo
+  notes: "PRISM trained against Qwen3.5-0.8B, hook layer 12. SFT followed by judge-guided GRPO. Experimental."
+  tags: [eval_suite, prism, grpo, "0.8b"]
+  weave_project: null            # set to "<entity>/<project>" to enable Weave tracing
+
+suite:
+  path: data/eval_suite.json
+  settings: [AP, HO, BC, BN]
+
+runner:
+  type: prism
+  display_name: "PRISM (Qwen3.5-0.8B, GRPO)"
+  checkpoint: ${PRISM_EVAL_CHECKPOINT_DIR}/prism-qwen3.5-0.8b-grpo.pt
+  device: cuda
+
+scoring:
+  bertscore: false
+  judge_llm: true
+  adversarial_detection: true
+
+annotation:
+  emit_trace: false              # offline-first; the runner reads model_id/hook_layer from the checkpoint
+  op_name: itm_annotate
+  batch_size: 16
+
+evaluation:
+  evaluation_name: prism_eval_suite_0.8b_1000
+  publish_leaderboard: false     # experimental variant — not published to the main leaderboard

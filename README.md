@@ -63,6 +63,7 @@ configuration options.
 | [PRISM w/o RL — Qwen](https://huggingface.co/Offensive-AI-Lab/prism-qwen3.5-9b-sft) | `Qwen/Qwen3.5-9B` | [qwen3.5-9b-sft.yaml](configs/main/qwen3.5-9b-sft.yaml) |
 | [PRISM — Gemma](https://huggingface.co/Offensive-AI-Lab/prism-gemma-2-9b-it-grpo) | `google/gemma-2-9b-it` | [gemma-2-9b-it-grpo.yaml](configs/main/gemma-2-9b-it-grpo.yaml) |
 | [PRISM — Ministral](https://huggingface.co/Offensive-AI-Lab/prism-ministral-3-8b-grpo) | `mistralai/Ministral-3-8B-Instruct-2512-BF16` | [ministral-3-8b-grpo.yaml](configs/main/ministral-3-8b-grpo.yaml) |
+| [PRISM — Qwen 0.8B (experimental)](https://huggingface.co/Offensive-AI-Lab/prism-qwen3.5-0.8b-grpo) | `Qwen/Qwen3.5-0.8B` | [qwen3.5-0.8b-grpo.yaml](configs/main/qwen3.5-0.8b-grpo.yaml) |
 
 Omit `--only` from the download command to fetch all four checkpoints. Target
 model weights are downloaded separately; set `HF_TOKEN` for gated models.
